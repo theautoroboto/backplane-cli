@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"log"
 
 	"github.com/spf13/cobra"
 
@@ -95,8 +96,15 @@ func newGetManagedJobCmd() *cobra.Command {
 					return utils.TryPrintAPIError(resp, rawFlag)
 				}
 
-				jobResp, err := BackplaneApi.ParseGetRunResponse(resp)
+				log.Println("==========================================")
+				log.Println("==========================================")
+				log.Println("==========================================")
+				log.Printf("wwwwwwww----resp-----: %v", resp)
+				log.Printf("wwwwwwwwww----err-----: %v", err)
+				log.Println("==========================================")
+				log.Println("==========================================")
 
+				jobResp, err := BackplaneApi.ParseGetRunResponse(resp)
 				if err != nil {
 					return fmt.Errorf("unable to parse response body from backplane: \n Status Code: %d", resp.StatusCode)
 				}
@@ -113,6 +121,13 @@ func newGetManagedJobCmd() *cobra.Command {
 				}
 
 				jobResp, err := BackplaneApi.ParseGetAllJobsResponse(resp)
+				log.Println("==========================================")
+				log.Println("==========================================")
+				log.Println("==========================================")
+				log.Printf("ffffffffffffff----resp-----: %v", resp)
+				log.Printf("ffffffffffffff----err-----: %v", err)
+				log.Println("==========================================")
+				log.Println("==========================================")
 
 				if err != nil {
 					return fmt.Errorf("unable to parse response body from backplane: \n Status Code: %d", resp.StatusCode)

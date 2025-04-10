@@ -46,14 +46,24 @@ func makeClientOptions(accessToken string) BackplaneApi.ClientOption {
 
 func (s *DefaultClientUtilsImpl) MakeRawBackplaneAPIClientWithAccessToken(base, accessToken string) (BackplaneApi.ClientInterface, error) {
 	// Inject client Proxy Url from config
+	// if s.clientProxyURL == "" {
+	// 	bpConfig, err := config.GetBackplaneConfiguration()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	if bpConfig.ProxyURL != nil {
+	// 		s.clientProxyURL = *bpConfig.ProxyURL
+	// 	}
+	// }
 	if s.clientProxyURL == "" {
-		bpConfig, err := config.GetBackplaneConfiguration()
-		if err != nil {
-			return nil, err
-		}
-		if bpConfig.ProxyURL != nil {
-			s.clientProxyURL = *bpConfig.ProxyURL
-		}
+		// bpConfig, err := config.GetBackplaneConfiguration()
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// if bpConfig.ProxyURL != nil {
+		// 	s.clientProxyURL = nil
+		// }
+		s.clientProxyURL = ""
 	}
 
 	return makeRawBackplaneAPIClientWithAccessTokenCustomProxy(base, accessToken, s.clientProxyURL)

@@ -157,21 +157,21 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.DisplayClusterInfo = viper.GetBool("display-cluster-info")
 
 	// pagerDuty token is optional
-	pagerDutyAPIKey := viper.GetString("pd-key")
-	if pagerDutyAPIKey != "" {
-		bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
-	} else {
-		logger.Info("No PagerDuty API Key configuration available. This will result in failure of `ocm-backplane login --pd <incident-id>` command.")
-	}
+	// pagerDutyAPIKey := viper.GetString("pd-key")
+	// if pagerDutyAPIKey != "" {
+	// 	bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
+	// } else {
+	// 	logger.Info("No PagerDuty API Key configuration available. This will result in failure of `ocm-backplane login --pd <incident-id>` command.")
+	// }
 
 	// OCM prod env name is optional as there is a default value
 	bpConfig.ProdEnvName = viper.GetString(prodEnvNameKey)
 
-	// JIRA base URL is optional as there is a default value
-	bpConfig.JiraBaseURL = viper.GetString(jiraBaseURLKey)
+	// // JIRA base URL is optional as there is a default value
+	// bpConfig.JiraBaseURL = viper.GetString(jiraBaseURLKey)
 
-	// JIRA token is optional
-	bpConfig.JiraToken = viper.GetString(JiraTokenViperKey)
+	// // JIRA token is optional
+	// bpConfig.JiraToken = viper.GetString(JiraTokenViperKey)
 
 	// JIRA config for access requests is optional as there is a default value
 	err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
@@ -186,8 +186,10 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
+	logger.Debugln("---GET HERE1?")
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
 	bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
+	logger.Debugln("---GET HERE2?")
 	bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
 
 	return bpConfig, nil
@@ -307,9 +309,9 @@ loop:
 func validateConfig() error {
 
 	// Validate the proxy url
-	if viper.GetStringSlice("proxy-url") == nil && os.Getenv(info.BackplaneProxyEnvName) == "" {
-		return fmt.Errorf("proxy-url must be set explicitly in either config file or via the environment HTTPS_PROXY")
-	}
+	// if viper.GetStringSlice("proxy-url") == nil && os.Getenv(info.BackplaneProxyEnvName) == "" {
+	// 	return fmt.Errorf("proxy-url must be set explicitly in either config file or via the environment HTTPS_PROXY")
+	// }
 
 	return nil
 }
@@ -353,12 +355,18 @@ func getBackplaneEnv(key string) (string, bool) {
 // CheckAPIConnection validate API connection via configured proxy and VPN
 func (config BackplaneConfiguration) CheckAPIConnection() error {
 
+	logger.Debugln("---GET HERE0005?")
 	// make test api connection
 	connectionOk, err := config.testHTTPRequestToBackplaneAPI()
+	logger.Debugln("---GET HERE0006?")
+	logger.Debugf("----connection-----: %v", connectionOk)
 
 	if !connectionOk {
+
+		logger.Debugln("------GET FAILED------?")
 		return err
 	}
+	logger.Debugln("---GET HERE0008?")
 
 	return nil
 }
@@ -368,23 +376,30 @@ func (config BackplaneConfiguration) testHTTPRequestToBackplaneAPI() (bool, erro
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
+	logger.Debugln("---GET HERE0008?")
 
-	if config.ProxyURL != nil {
-		proxyURL, err := url.Parse(*config.ProxyURL)
-		if err != nil {
-			return false, err
-		}
-		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
-	}
+	// if config.ProxyURL != nil {
+	// 	proxyURL, err := url.Parse(*config.ProxyURL)
+	// 	if err != nil {
+	// 		return false, err
+	// 	}
+	// 	http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+	// }
 
 	req, err := http.NewRequest("HEAD", config.URL, nil)
 	if err != nil {
+		logger.Debugln("---GET HERE0009?")
 		return false, err
 	}
 	_, err = client.Do(req)
 	if err != nil {
+		logger.Debugln("---GET HERE0010?")
+		logger.Debugf("----Failed: %v", err)
+
 		return false, err
 	}
+
+	logger.Debugln("---GET HERE0010?")
 
 	return true, nil
 }

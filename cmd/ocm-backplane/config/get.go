@@ -32,14 +32,14 @@ func getConfig(cmd *cobra.Command, args []string) error {
 	}
 
 	switch args[0] {
-	case URLConfigVar:
-		fmt.Printf("%s: %s\n", URLConfigVar, config.URL)
-	case ProxyURLConfigVar:
-		fmt.Printf("%s: %s\n", ProxyURLConfigVar, proxyURL)
+	// case URLConfigVar:
+	// 	fmt.Printf("%s: %s\n", URLConfigVar, config.URL)
+	// case ProxyURLConfigVar:
+	// 	fmt.Printf("%s: %s\n", ProxyURLConfigVar, proxyURL)
 	case SessionConfigVar:
 		fmt.Printf("%s: %s\n", SessionConfigVar, config.SessionDirectory)
-	case PagerDutyAPIConfigVar:
-		fmt.Printf("%s: %s\n", PagerDutyAPIConfigVar, config.PagerDutyAPIKey)
+	// case PagerDutyAPIConfigVar:
+	// 	fmt.Printf("%s: %s\n", PagerDutyAPIConfigVar, config.PagerDutyAPIKey)
 	case "all":
 		fmt.Printf("%s: %s\n", URLConfigVar, config.URL)
 		fmt.Printf("%s: %s\n", ProxyURLConfigVar, proxyURL)

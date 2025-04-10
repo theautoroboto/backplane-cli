@@ -66,35 +66,39 @@ func (cfg *QueryConfig) GetAWSV2Config() (aws.Config, error) {
 // GetCloudConsole returns Cloud Credentials Response
 func (cfg *QueryConfig) GetCloudConsole() (*ConsoleResponse, error) {
 	ocmToken, _, err := cfg.OcmConnection.Tokens()
+	// cfg.OcmConnection
+
+	logger.Debugf("###################### cfg.OcmConnection-----: %v", cfg.OcmConnection.URL())
 	if err != nil {
 		return nil, fmt.Errorf("unable to get token for ocm connection")
 	}
 
-	isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
-	}
+	// isolatedBackplane := false
+	// isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
+	// }
 
-	if isolatedBackplane {
-		logger.Debugf("cluster is using isolated backplane")
-		targetCredentials, err := cfg.getIsolatedCredentials(ocmToken)
-		if err != nil {
-			return nil, fmt.Errorf("failed to assume role with isolated backplane flow: %w", err)
-		}
+	// if isolatedBackplane {
+	// 	logger.Debugf("cluster is using isolated backplane")
+	// 	targetCredentials, err := cfg.getIsolatedCredentials(ocmToken)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to assume role with isolated backplane flow: %w", err)
+	// 	}
 
-		resp, err := awsutil.GetSigninToken(targetCredentials, cfg.Cluster.Region().ID())
-		if err != nil {
-			return nil, fmt.Errorf("failed to get signin token: %w", err)
-		}
+	// 	resp, err := awsutil.GetSigninToken(targetCredentials, cfg.Cluster.Region().ID())
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to get signin token: %w", err)
+	// 	}
 
-		signinFederationURL, err := awsutil.GetConsoleURL(resp.SigninToken, cfg.Cluster.Region().ID())
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate console url: %w", err)
-		}
-		return &ConsoleResponse{ConsoleLink: signinFederationURL.String()}, nil
-	} else {
-		return cfg.getCloudConsoleFromPublicAPI(ocmToken)
-	}
+	// 	signinFederationURL, err := awsutil.GetConsoleURL(resp.SigninToken, cfg.Cluster.Region().ID())
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("failed to generate console url: %w", err)
+	// 	}
+	// 	return &ConsoleResponse{ConsoleLink: signinFederationURL.String()}, nil
+	// } else {
+	return cfg.getCloudConsoleFromPublicAPI(ocmToken)
+	// }
 }
 
 // GetCloudConsole returns console response calling to public Backplane API
@@ -115,6 +119,13 @@ func (cfg *QueryConfig) getCloudConsoleFromPublicAPI(ocmToken string) (*ConsoleR
 	}
 
 	credsResp, err := BackplaneApi.ParseGetCloudConsoleResponse(resp)
+
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("wwwwwwwwwwwww----resp-----: %v", resp)
+	logger.Debugf("wwwwwwwwwwwww----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response body from backplane:\n  Status Code: %d", resp.StatusCode)
 	}
@@ -178,6 +189,12 @@ func (cfg *QueryConfig) getCloudCredentialsFromBackplaneAPI(ocmToken string) (bp
 	logger.Debugln("Parsing response")
 
 	credsResp, err := BackplaneApi.ParseGetCloudCredentialsResponse(resp)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("bbbbbbbbbbbb----resp-----: %v", resp)
+	logger.Debugf("bbbbbbbbbbbb----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response body from backplane:\n  Status Code: %d : err: %v", resp.StatusCode, err)
 	}

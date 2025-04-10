@@ -146,9 +146,17 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("Extracting Backplane configuration")
 	// Get Backplane configuration
 	bpConfig, err := config.GetBackplaneConfiguration()
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("##############----bpConfig.UR-----: %v", bpConfig.URL)
+	// logger.Debugf("wwwwwwwwwwwww----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	
 	if err != nil {
 		return err
 	}
+	logger.Debugln("---GET HERE5?")
 	logger.Debugf("Backplane Config File Contains: %v \n", bpConfig)
 
 	// login to the cluster based on login type
@@ -333,22 +341,34 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		"clusterID": clusterID,
 	}).Debugln("Query backplane-api for proxy url of our target cluster")
 	// Query backplane-api for proxy url
+
+	logger.Debugln("---GET HERE000?")
 	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
+	logger.Debugln("---GET HERE0001?")
 	if err != nil {
+		logger.Debugln("---GET HERE0002?")
+		logger.Debugf("----connection err-----: %v", err.Error())
 		// Declare helperMsg
 		helperMsg := "\n\033[1mNOTE: To troubleshoot the connectivity issues, please run `ocm-backplane health-check`\033[0m\n\n"
 
 		// Check API connection with configured proxy
 		if connErr := bpConfig.CheckAPIConnection(); connErr != nil {
+			// fine here
+			logger.Debugf("-----login Attempt Failed: %v.\n%s", connErr, helperMsg)
 			return fmt.Errorf("cannot connect to Backplane API URL: %v.\n%s", connErr, helperMsg)
 		}
+		logger.Debugln("---GET HERE0003?")
+		logger.Debugf("----Failed: %v.\n%s", err, helperMsg)
 
 		return fmt.Errorf("login Attempt Failed: %v.\n%s", err, helperMsg)
 	}
 
-	logger.WithField("URL", bpAPIClusterURL).Debugln("Proxy")
+	// logger.WithField("URL", bpAPIClusterURL).Debugln("Proxy")
+
+	logger.Debugln("---GET HERE0004?")
 
 	logger.Debugln("Generating a new K8s cluster config file")
+	logger.Debugln("---GET HERE0005?")
 	cf := genericclioptions.NewConfigFlags(true)
 	rc, err := cf.ToRawKubeConfigLoader().RawConfig()
 	if err != nil {
@@ -533,36 +553,75 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	client, err := backplaneapi.DefaultClientUtils.MakeRawBackplaneAPIClientWithAccessToken(api, accessToken)
 
 	if err != nil {
+		logger.Debugf("----Failed doLogin-----: %v", err)
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
 
+	logger.Debugln("---GET HERE6?")
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
+	logger.Debugln("---GET HERE7?")
+
 	// Print the whole response if we can't parse it. Eg. 5xx error from http server.
 	if err != nil {
 		// trying to determine the error
+		logger.Debugln("---GET HERE8?")
 		errBody := err.Error()
 		if strings.Contains(errBody, "dial tcp") && strings.Contains(errBody, "i/o timeout") {
 			return "", fmt.Errorf("unable to connect to backplane api")
 		}
+		logger.Debugln("---GET HERE9?")
 
 		return "", err
 	}
+	logger.Debugln("---GET HERE10?")
 
 	err = backplaneapi.CheckResponseDeprecation(resp)
+	logger.Debugln("---GET HERE11?")
 	if errors.Is(err, backplaneapi.ErrDeprecation) {
 		logger.Warnf("The server indicated that backplane-cli version %s is deprecated. Please update as soon as possible.", info.DefaultInfoService.GetVersion())
 	}
 
+	logger.Debugln("---GET HERE12?")
+
 	if resp.StatusCode != http.StatusOK {
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugln("---GET HERE13?")
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		return "", utils.TryPrintAPIError(resp, false)
 	}
 
+	// bodyBytes, err := io.ReadAll(resp.Body)
+	logger.Debugln("---GET HERE14?")
+	// fails here
 	loginResp, err := BackplaneApi.ParseLoginClusterResponse(resp)
-
+	// swaggit, err := BackplaneApi.GetSwagger()
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugf(">>>>>>>>>>>>>>----resp.body-----: %v", resp.Body)
+	logger.Debugf(">>>>>>>>>>>>>>----resp-----: %v", resp)
+	logger.Debugf(">>>>>>>>>>>>>>----err-----: %v", err)
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugln("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+	logger.Debugf(">>>>>>>>>>>>>>---- doLogin err-----: %v", err)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin Header-----: %v", resp.Header)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin resp.Body-----: %v", resp.Body)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin StatusCode-----: %v", resp.StatusCode)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin Request-----: %v", resp.Request)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin Request.Method-----: %v", resp.Request.Method)
+	logger.Debugf(">>>>>>>>>>>>>>----doLogin Request.URL-----: %v", resp.Request.URL)
+	logger.Debugln("---GET HERE15?")
 	if err != nil {
-		return "", fmt.Errorf("unable to parse response body from backplane: \n Status Code: %d", resp.StatusCode)
+		logger.Debugln("---GET HERE16?")
+		return "", fmt.Errorf("--------unable to parse response body from backplane: \n Status Code: %d", resp.StatusCode)
 	}
 
+	logger.Debugln("---GET HERE18?")
 	return api + *loginResp.JSON200.ProxyUri, nil
 }
 

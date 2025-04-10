@@ -36,16 +36,16 @@ func CheckVPNConnectivity(netInterfaces NetworkInterface, client HTTPClient) err
 		return fmt.Errorf("%s", errMsg)
 	}
 
-	vpnCheckEndpoint, err := GetVPNCheckEndpointFunc()
-	if err != nil {
-		logger.Errorf("Failed to get VPN check endpoint: %v", err)
-		return err
-	}
-	if err := testEndPointConnectivity(vpnCheckEndpoint, client); err != nil {
-		errMsg := fmt.Sprintf("Failed to access internal URL %s: %v", vpnCheckEndpoint, err)
-		logger.Errorf("%s", errMsg)
-		return fmt.Errorf("%s", errMsg)
-	}
+	// vpnCheckEndpoint, err := GetVPNCheckEndpointFunc()
+	// if err != nil {
+	// 	logger.Errorf("Failed to get VPN check endpoint: %v", err)
+	// 	return err
+	// }
+	// if err := testEndPointConnectivity(vpnCheckEndpoint, client); err != nil {
+	// 	errMsg := fmt.Sprintf("Failed to access internal URL %s: %v", vpnCheckEndpoint, err)
+	// 	logger.Errorf("%s", errMsg)
+	// 	return fmt.Errorf("%s", errMsg)
+	// }
 
 	return nil
 }

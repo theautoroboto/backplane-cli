@@ -224,6 +224,12 @@ func createJob(client BackplaneApi.ClientInterface) (*BackplaneApi.Job, error) {
 
 	// format create job response
 	createResp, err := BackplaneApi.ParseCreateJobResponse(resp)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("qqqqqq----resp-----: %v", resp)
+	logger.Debugf("qqqqqq----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response body from backplane: \n Status Code: %d", resp.StatusCode)

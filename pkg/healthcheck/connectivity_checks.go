@@ -50,36 +50,36 @@ func RunHealthCheck(checkVPN, checkProxy bool) func(cmd *cobra.Command, args []s
 			os.Exit(1)
 		}
 
-		if checkVPN {
-			fmt.Println("Checking VPN connectivity...")
-			err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
-			if err != nil {
-				fmt.Println("VPN connectivity check failed:", err)
-				os.Exit(1)
-			} else {
-				fmt.Println("VPN connectivity check passed!")
-			}
-			return
-		}
+		// if checkVPN {
+		// 	fmt.Println("Checking VPN connectivity...")
+		// 	err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
+		// 	if err != nil {
+		// 		fmt.Println("VPN connectivity check failed:", err)
+		// 		os.Exit(1)
+		// 	} else {
+		// 		fmt.Println("VPN connectivity check passed!")
+		// 	}
+		// 	return
+		// }
 
-		if checkProxy {
-			err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
-			if err != nil {
-				fmt.Println("VPN connectivity check failed:", err)
-				fmt.Println("Note: Proxy connectivity check requires VPN to be connected. Please ensure VPN is connected and try again.")
-				os.Exit(1)
-			}
+		// if checkProxy {
+		// 	err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
+		// 	if err != nil {
+		// 		fmt.Println("VPN connectivity check failed:", err)
+		// 		fmt.Println("Note: Proxy connectivity check requires VPN to be connected. Please ensure VPN is connected and try again.")
+		// 		os.Exit(1)
+		// 	}
 
-			fmt.Println("Checking proxy connectivity...")
-			_, err = CheckProxyConnectivity(HTTPClients)
-			if err != nil {
-				fmt.Println("Proxy connectivity check failed:", err)
-				os.Exit(1)
-			} else {
-				fmt.Println("Proxy connectivity check passed!")
-			}
-			return
-		}
+		// 	fmt.Println("Checking proxy connectivity...")
+		// 	_, err = CheckProxyConnectivity(HTTPClients)
+		// 	if err != nil {
+		// 		fmt.Println("Proxy connectivity check failed:", err)
+		// 		os.Exit(1)
+		// 	} else {
+		// 		fmt.Println("Proxy connectivity check passed!")
+		// 	}
+		// 	return
+		// }
 
 		// If neither flag is set, check both VPN and Proxy connectivity, then check Backplane API connectivity.
 		checkAllConnections()
@@ -87,26 +87,26 @@ func RunHealthCheck(checkVPN, checkProxy bool) func(cmd *cobra.Command, args []s
 }
 
 func checkAllConnections() {
-	fmt.Println("Checking VPN connectivity...")
-	err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
-	if err != nil {
-		fmt.Println("VPN connectivity check failed:", err)
-		os.Exit(1)
-	} else {
-		fmt.Println("VPN connectivity check passed!")
-	}
+	// fmt.Println("Checking VPN connectivity...")
+	// err := CheckVPNConnectivity(NetInterfaces, HTTPClients)
+	// if err != nil {
+	// 	fmt.Println("VPN connectivity check failed:", err)
+	// 	os.Exit(1)
+	// } else {
+	// 	fmt.Println("VPN connectivity check passed!")
+	// }
 
-	fmt.Println("Checking proxy connectivity...")
-	proxyURL, err := CheckProxyConnectivity(HTTPClients)
-	if err != nil {
-		fmt.Println("Proxy connectivity check failed:", err)
-		os.Exit(1)
-	} else {
-		fmt.Println("Proxy connectivity check passed!")
-	}
+	// fmt.Println("Checking proxy connectivity...")
+	// proxyURL, err := CheckProxyConnectivity(HTTPClients)
+	// if err != nil {
+	// 	fmt.Println("Proxy connectivity check failed:", err)
+	// 	os.Exit(1)
+	// } else {
+	// 	fmt.Println("Proxy connectivity check passed!")
+	// }
 
 	fmt.Println("Checking backplane API connectivity...")
-	err = CheckBackplaneAPIConnectivity(HTTPClients, proxyURL)
+	err := CheckBackplaneAPIConnectivity(HTTPClients, "")
 	if err != nil {
 		fmt.Println("Backplane API connectivity check failed:", err)
 		os.Exit(1)

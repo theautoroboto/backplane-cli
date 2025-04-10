@@ -105,10 +105,15 @@ func MatchBaseDomain(longHostname, baseDomain string) bool {
 }
 
 func TryParseBackplaneAPIError(rsp *http.Response) (*BackplaneApi.Error, error) {
+
+	logger.Debugln("------HEEEEEREEEE WE GOOOOOO------?")
 	if rsp == nil {
 		return nil, fmt.Errorf("parse err provided nil http response")
 	}
+	logger.Debugf("xxxxxx----rsp.Body-----: %v", rsp.Body)
 	bodyBytes, err := io.ReadAll(rsp.Body)
+	logger.Debugf("xxxxx----err-----: %v", err)
+
 	defer func() {
 		_ = rsp.Body.Close()
 	}()
@@ -116,10 +121,12 @@ func TryParseBackplaneAPIError(rsp *http.Response) (*BackplaneApi.Error, error) 
 		return nil, err
 	} else {
 		var dest BackplaneApi.Error
+		logger.Debugf("xxxxx----bodyBytes-----: %v", bodyBytes)
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			// Avoid squashing the HTTP response info with Unmarshal err...
 			bodyStr := strings.ReplaceAll(string(bodyBytes[:]), "\n", " ")
-			err := fmt.Errorf("status:'%s', code:'%d'; failed to unmarshal response:'%s'; %w", rsp.Status, rsp.StatusCode, bodyStr, err)
+			logger.Debugf("xxxxx----bodyStr-----: %v", bodyStr)
+			err := fmt.Errorf("xxxxxxxxstatus:'%s', code:'%d'; failed to unmarshal response:'%s'; %w", rsp.Status, rsp.StatusCode, bodyStr, err)
 			return nil, err
 		}
 		return &dest, nil
@@ -128,6 +135,16 @@ func TryParseBackplaneAPIError(rsp *http.Response) (*BackplaneApi.Error, error) 
 
 func TryRenderErrorRaw(rsp *http.Response) error {
 	data, err := TryParseBackplaneAPIError(rsp)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("xxxxx----rsp-----: %v", rsp)
+	logger.Debugf("xxxxx----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	if err != nil {
 		return err
 	}
