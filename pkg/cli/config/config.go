@@ -97,8 +97,8 @@ func GetConfigFilePath() (string, error) {
 // GetBackplaneConfiguration parses and returns the given backplane configuration
 func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	viper.SetDefault(prodEnvNameKey, prodEnvNameDefaultValue)
-	viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
-	viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
+	// viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
+	// viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
 
 	filePath, err := GetConfigFilePath()
 	if err != nil {
@@ -146,11 +146,11 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	}
 
 	// proxyURL is required
-	proxyInConfigFile := viper.GetStringSlice("proxy-url")
-	proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
-	if proxyURL != "" {
-		bpConfig.ProxyURL = &proxyURL
-	}
+	// proxyInConfigFile := viper.GetStringSlice("proxy-url")
+	// proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
+	// if proxyURL != "" {
+	// 	bpConfig.ProxyURL = &proxyURL
+	// }
 
 	bpConfig.SessionDirectory = viper.GetString("session-dir")
 	bpConfig.AssumeInitialArn = viper.GetString("assume-initial-arn")
@@ -174,22 +174,22 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	// bpConfig.JiraToken = viper.GetString(JiraTokenViperKey)
 
 	// JIRA config for access requests is optional as there is a default value
-	err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
+	// err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
 
-	if err != nil {
-		logger.Warnf("failed to unmarshal '%s' entry as json in '%s' config file: %v", JiraConfigForAccessRequestsKey, filePath, err)
-	} else {
-		for _, project := range []string{bpConfig.JiraConfigForAccessRequests.DefaultProject, bpConfig.JiraConfigForAccessRequests.ProdProject} {
-			if _, isKnownProject := bpConfig.JiraConfigForAccessRequests.ProjectToTransitionsNames[project]; !isKnownProject {
-				logger.Warnf("content unmarshalled from '%s' in '%s' config file is inconsistent: no transitions defined for project '%s'", JiraConfigForAccessRequestsKey, filePath, project)
-			}
-		}
-	}
+	// if err != nil {
+	// 	logger.Warnf("failed to unmarshal '%s' entry as json in '%s' config file: %v", JiraConfigForAccessRequestsKey, filePath, err)
+	// } else {
+	// 	for _, project := range []string{bpConfig.JiraConfigForAccessRequests.DefaultProject, bpConfig.JiraConfigForAccessRequests.ProdProject} {
+	// 		if _, isKnownProject := bpConfig.JiraConfigForAccessRequests.ProjectToTransitionsNames[project]; !isKnownProject {
+	// 			logger.Warnf("content unmarshalled from '%s' in '%s' config file is inconsistent: no transitions defined for project '%s'", JiraConfigForAccessRequestsKey, filePath, project)
+	// 		}
+	// 	}
+	// }
 
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
-	bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
+	// bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
 
-	bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
+	// bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
 
 	return bpConfig, nil
 }
