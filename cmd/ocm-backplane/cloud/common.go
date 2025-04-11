@@ -74,29 +74,29 @@ func (cfg *QueryConfig) GetCloudConsole() (*ConsoleResponse, error) {
 	}
 
 	// isolatedBackplane := false
-	// isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
-	// }
+	isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
+	}
 
-	// if isolatedBackplane {
-	// 	logger.Debugf("cluster is using isolated backplane")
-	// 	targetCredentials, err := cfg.getIsolatedCredentials(ocmToken)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("failed to assume role with isolated backplane flow: %w", err)
-	// 	}
+	if isolatedBackplane {
+		logger.Debugf("cluster is using isolated backplane")
+		targetCredentials, err := cfg.getIsolatedCredentials(ocmToken)
+		if err != nil {
+			return nil, fmt.Errorf("failed to assume role with isolated backplane flow: %w", err)
+		}
 
-	// 	resp, err := awsutil.GetSigninToken(targetCredentials, cfg.Cluster.Region().ID())
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("failed to get signin token: %w", err)
-	// 	}
+		resp, err := awsutil.GetSigninToken(targetCredentials, cfg.Cluster.Region().ID())
+		if err != nil {
+			return nil, fmt.Errorf("failed to get signin token: %w", err)
+		}
 
-	// 	signinFederationURL, err := awsutil.GetConsoleURL(resp.SigninToken, cfg.Cluster.Region().ID())
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("failed to generate console url: %w", err)
-	// 	}
-	// 	return &ConsoleResponse{ConsoleLink: signinFederationURL.String()}, nil
-	// } else {
+		signinFederationURL, err := awsutil.GetConsoleURL(resp.SigninToken, cfg.Cluster.Region().ID())
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate console url: %w", err)
+		}
+		return &ConsoleResponse{ConsoleLink: signinFederationURL.String()}, nil
+	} else {
 	return cfg.getCloudConsoleFromPublicAPI(ocmToken)
 	// }
 }
