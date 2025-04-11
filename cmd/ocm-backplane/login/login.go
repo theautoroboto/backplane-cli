@@ -257,11 +257,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
 	logger.Debugf("globalOpts.Service  : %v \n", globalOpts.Service)
 	logger.Debugf("args.kubeConfigPath  : %v \n", args.kubeConfigPath)
-	logger.Debugf("globalOpts.BackplaneURL  : %v \n", globalOpts.BackplaneURL)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 
 	if globalOpts.Manager {
 		logger.WithField("Cluster ID", clusterID).Debugln("Finding managing cluster")
@@ -347,9 +342,16 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugln("Extracting backplane URL")
 	// Get Backplane URL
 	bpURL := globalOpts.BackplaneURL
+	logger.Debugf("bpURL  : %v \n", bpURL)
 	if bpURL == "" {
 		bpURL = bpConfig.URL
 	}
+	logger.Debugf("bpConfig.URL  : %v \n", bpConfig.URL)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
+
 
 	if bpURL == "" {
 		return errors.New("empty backplane url - check your backplane-cli configuration")
