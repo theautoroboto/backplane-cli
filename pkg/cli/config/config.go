@@ -186,10 +186,9 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
-	logger.Debugln("---GET HERE1?")
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
 	bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
-	logger.Debugln("---GET HERE2?")
+
 	bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
 
 	return bpConfig, nil
@@ -355,10 +354,10 @@ func getBackplaneEnv(key string) (string, bool) {
 // CheckAPIConnection validate API connection via configured proxy and VPN
 func (config BackplaneConfiguration) CheckAPIConnection() error {
 
-	logger.Debugln("---GET HERE0005?")
+
 	// make test api connection
 	connectionOk, err := config.testHTTPRequestToBackplaneAPI()
-	logger.Debugln("---GET HERE0006?")
+
 	logger.Debugf("----connection-----: %v", connectionOk)
 
 	if !connectionOk {
@@ -366,7 +365,7 @@ func (config BackplaneConfiguration) CheckAPIConnection() error {
 		logger.Debugln("------GET FAILED------?")
 		return err
 	}
-	logger.Debugln("---GET HERE0008?")
+
 
 	return nil
 }
@@ -376,7 +375,7 @@ func (config BackplaneConfiguration) testHTTPRequestToBackplaneAPI() (bool, erro
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	logger.Debugln("---GET HERE0008?")
+
 
 	// if config.ProxyURL != nil {
 	// 	proxyURL, err := url.Parse(*config.ProxyURL)
@@ -388,18 +387,17 @@ func (config BackplaneConfiguration) testHTTPRequestToBackplaneAPI() (bool, erro
 
 	req, err := http.NewRequest("HEAD", config.URL, nil)
 	if err != nil {
-		logger.Debugln("---GET HERE0009?")
+
 		return false, err
 	}
 	_, err = client.Do(req)
 	if err != nil {
-		logger.Debugln("---GET HERE0010?")
+
 		logger.Debugf("----Failed: %v", err)
 
 		return false, err
 	}
 
-	logger.Debugln("---GET HERE0010?")
 
 	return true, nil
 }
