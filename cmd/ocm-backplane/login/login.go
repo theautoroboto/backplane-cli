@@ -365,17 +365,18 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		// Declare helperMsg
 		helperMsg := "\n\033[1mNOTE: !!!!!STUPID!!!!! `ocm-backplane health-check`\033[0m\n\n"
 
+
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugf("---bpConfig.CheckAPIConnection()-----: %v", bpConfig.CheckAPIConnection())
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		// Check API connection with configured proxy
 		if connErr := bpConfig.CheckAPIConnection(); connErr != nil {
 			// fine here
 			logger.Debugf("-----login Attempt Failed: %v.\n%s", connErr, helperMsg)
 			return fmt.Errorf("cannot connect to Backplane API URL: %v.\n%s", connErr, helperMsg)
 		}
-		logger.Debugln("==========================================")
-		logger.Debugln("==========================================")
-		logger.Debugf("---resp.StatusCode-----: %v", resp.StatusCode)
-		logger.Debugln("==========================================")
-		logger.Debugln("==========================================")
 
 		logger.Debugf("----Failed: %v.\n%s", err, helperMsg)
 
