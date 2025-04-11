@@ -346,16 +346,24 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		"clusterID": clusterID,
 	}).Debugln("Query backplane-api for proxy url of our target cluster")
 	// Query backplane-api for proxy url
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	logger.Debugf("----bpURL-----: %v", bpURL)
 	logger.Debugf("----clusterID-----: %v", clusterID)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 
 	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
 
 	if err != nil {
 
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		logger.Debugf("----connection err-----: %v", err.Error())
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		// Declare helperMsg
-		helperMsg := "\n\033[1mNOTE: To troubleshoot the connectivity issues, please run `ocm-backplane health-check`\033[0m\n\n"
+		helperMsg := "\n\033[1mNOTE: !!!!!STUPID!!!!! `ocm-backplane health-check`\033[0m\n\n"
 
 		// Check API connection with configured proxy
 		if connErr := bpConfig.CheckAPIConnection(); connErr != nil {
@@ -363,6 +371,11 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 			logger.Debugf("-----login Attempt Failed: %v.\n%s", connErr, helperMsg)
 			return fmt.Errorf("cannot connect to Backplane API URL: %v.\n%s", connErr, helperMsg)
 		}
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugf("---resp.StatusCode-----: %v", resp.StatusCode)
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 
 		logger.Debugf("----Failed: %v.\n%s", err, helperMsg)
 
