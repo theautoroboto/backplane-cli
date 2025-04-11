@@ -200,7 +200,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	// Set proxy url to http client
 	proxyURL := globalOpts.ProxyURL
 
-	logger.Debugln("8888888888888888888888888888888888888888888888888888888888")
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
@@ -255,6 +255,10 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	}
 
 	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 
 	if globalOpts.Manager {
 		logger.WithField("Cluster ID", clusterID).Debugln("Finding managing cluster")
@@ -266,10 +270,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		logger.Debugf("globalOpts.ProxyURL  : %v \n", globalOpts.ProxyURL)
 		logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
 		logger.Debugf("err  : %v \n", err)
-		logger.Debugln("==========================================")
-		logger.Debugln("==========================================")
-		logger.Debugln("==========================================")
-		logger.Debugln("8888888888888888888888888888888888888888888888888888888888")
+
 		if err != nil {
 			return err
 		}
