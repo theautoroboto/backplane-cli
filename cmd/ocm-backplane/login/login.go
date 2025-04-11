@@ -207,6 +207,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugln("==========================================")
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 	logger.Debugf("proxyURL: %v \n", proxyURL)
+	logger.Debugf("bpConfig.ProxyURL: %v \n", bpConfig.ProxyURL)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
