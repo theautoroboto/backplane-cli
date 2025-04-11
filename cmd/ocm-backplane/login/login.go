@@ -158,7 +158,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("##############----err-----: %v", err)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
-	
+
 	if err != nil {
 		return err
 	}
@@ -367,7 +367,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		// Declare helperMsg
 		helperMsg := "\n\033[1mNOTE: !!!!!STUPID!!!!! `ocm-backplane health-check`\033[0m\n\n"
 
-
 		logger.Debugln("==========================================")
 		logger.Debugln("==========================================")
 		logger.Debugf("---bpConfig.CheckAPIConnection()-----: %v", bpConfig.CheckAPIConnection())
@@ -391,8 +390,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	}
 
 	// logger.WithField("URL", bpAPIClusterURL).Debugln("Proxy")
-
-
 
 	logger.Debugln("Generating a new K8s cluster config file")
 
@@ -592,9 +589,14 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
 
-
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 
+	logger.Debugf("----resp.Body-----: %v", resp.Body)
+	logger.Debugf("----resp.Status-----: %v", resp.Status)
+	logger.Debugf("----clusterID-----: %v", clusterID)
+	logger.Debugf("----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 
 	// Print the whole response if we can't parse it. Eg. 5xx error from http server.
 	if err != nil {
@@ -605,18 +607,14 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 			return "", fmt.Errorf("unable to connect to backplane api")
 		}
 
-
 		return "", err
 	}
-
 
 	err = backplaneapi.CheckResponseDeprecation(resp)
 
 	if errors.Is(err, backplaneapi.ErrDeprecation) {
 		logger.Warnf("The server indicated that backplane-cli version %s is deprecated. Please update as soon as possible.", info.DefaultInfoService.GetVersion())
 	}
-
-
 
 	if resp.StatusCode != http.StatusOK {
 		logger.Debugln("==========================================")
