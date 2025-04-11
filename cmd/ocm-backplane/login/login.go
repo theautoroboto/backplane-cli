@@ -578,6 +578,10 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	logger.Debugf("----api-----: %v", api)
 	logger.Debugf("----accessToken-----: %v", accessToken)
 	logger.Debugf("----err-----: %v", err)
@@ -600,6 +604,10 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugf("----resp.Request.Method-----: %v", resp.Request.Method)
 	logger.Debugf("----clusterID-----: %v", clusterID)
 	logger.Debugf("----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 
