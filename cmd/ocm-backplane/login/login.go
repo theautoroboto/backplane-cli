@@ -196,11 +196,11 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		return fmt.Errorf("login type cannot be detected")
 	}
 
-
 	logger.Debugln("Setting Proxy URL from global options")
 	// Set proxy url to http client
 	proxyURL := globalOpts.ProxyURL
 
+	logger.Debugln("8888888888888888888888888888888888888888888888888888888888")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
@@ -239,7 +239,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		"ID":   clusterID,
 		"Name": clusterName}).Infoln("Target cluster")
 
-	logger.Debugf("args.clusterInfo : %v \n", args.clusterInfo )
+	logger.Debugf("args.clusterInfo : %v \n", args.clusterInfo)
 
 	if args.clusterInfo {
 		if err := login.PrintClusterInfo(clusterID); err != nil {
@@ -247,15 +247,14 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		}
 	}
 
-
-	logger.Debugf("bpConfig.DisplayClusterInfo : %v \n", bpConfig.DisplayClusterInfo )
+	logger.Debugf("bpConfig.DisplayClusterInfo : %v \n", bpConfig.DisplayClusterInfo)
 	if bpConfig.DisplayClusterInfo {
 		if err := login.PrintClusterInfo(clusterID); err != nil {
 			return fmt.Errorf("failed to print cluster info: %v", err)
 		}
 	}
 
-	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager  )
+	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
 
 	if globalOpts.Manager {
 		logger.WithField("Cluster ID", clusterID).Debugln("Finding managing cluster")
@@ -270,7 +269,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		logger.Debugln("==========================================")
 		logger.Debugln("==========================================")
 		logger.Debugln("==========================================")
-		logger.Debugln("==========================================")
+		logger.Debugln("8888888888888888888888888888888888888888888888888888888888")
 		if err != nil {
 			return err
 		}
