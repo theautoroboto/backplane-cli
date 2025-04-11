@@ -607,6 +607,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugf("----resp.Request.URL.Hostname()-----: %v", resp.Request.URL.Hostname())
 	logger.Debugf("----resp.Request.URL.User-----: %v", resp.Request.URL.User)
 	logger.Debugf("----resp.Request.URL.RequestURI()-----: %v", resp.Request.URL.RequestURI())
+	logger.Debugf("----resp.Request.URL-----: %v", resp.Request.URL)
 	logger.Debugf("----resp.Request.RequestURI-----: %v", resp.Request.RequestURI)
 	logger.Debugf("----clusterID-----: %v", clusterID)
 	logger.Debugf("----err-----: %v", err)
