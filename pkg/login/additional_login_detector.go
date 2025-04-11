@@ -62,6 +62,11 @@ func FindOtherSessions(clientset kubernetes.Interface, config *rest.Config, user
 	}
 
 	for _, role := range backplaneUserNamespacesToCheck {
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugf("----role-----: %v", role)
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		ns := BackplaneUserNamespacePrefix + role
 		saList, err := clientset.CoreV1().ServiceAccounts(ns).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: "managed.openshift.io/backplane=true",
