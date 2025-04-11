@@ -353,7 +353,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugln("==========================================")
 	logger.Debugf("----bpURL-----: %v", bpURL)
 	logger.Debugf("----clusterID-----: %v", clusterID)
-	logger.Debugf("---err-----: %v", err)
+	logger.Debugf("----err-----: %v", err)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 
@@ -578,6 +578,14 @@ func GetRestConfigAsUser(bp config.BackplaneConfiguration, clusterID, username s
 func doLogin(api, clusterID, accessToken string) (string, error) {
 
 	client, err := backplaneapi.DefaultClientUtils.MakeRawBackplaneAPIClientWithAccessToken(api, accessToken)
+
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("----api-----: %v", api)
+	logger.Debugf("----accessToken-----: %v", accessToken)
+	logger.Debugf("----err-----: %v", err)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 
 	if err != nil {
 		logger.Debugf("----Failed doLogin-----: %v", err)
