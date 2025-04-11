@@ -65,6 +65,7 @@ func FindOtherSessions(clientset kubernetes.Interface, config *rest.Config, user
 		logger.Debugln("8888888888888888888888888888888888888888888888888888888")
 		logger.Debugln("8888888888888888888888888888888888888888888888888888888")
 		logger.Debugf("----role-----: %v", role)
+		logger.Debugf("----BackplaneUserNamespacePrefix-----: %v", BackplaneUserNamespacePrefix)
 		logger.Debugln("8888888888888888888888888888888888888888888888888888888")
 		logger.Debugln("8888888888888888888888888888888888888888888888888888888")
 		ns := BackplaneUserNamespacePrefix + role
