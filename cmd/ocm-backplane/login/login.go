@@ -167,23 +167,23 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	// login to the cluster based on login type
 	logger.Debugf("Extracting Backplane Cluster ID")
 	switch loginType {
-	case LoginTypePagerduty:
-		info, err := getClusterInfoFromPagerduty(bpConfig)
-		if err != nil {
-			return err
-		}
-		clusterKey = info.ClusterID
-		elevateReason = info.WebURL
-	case LoginTypeJira:
-		ohssIssue, err := getClusterInfoFromJira()
-		if err != nil {
-			return err
-		}
-		if ohssIssue.ClusterID == "" {
-			return fmt.Errorf("clusterID cannot be detected for JIRA issue:%s", args.ohss)
-		}
-		clusterKey = ohssIssue.ClusterID
-		elevateReason = ohssIssue.WebURL
+	// case LoginTypePagerduty:
+	// 	info, err := getClusterInfoFromPagerduty(bpConfig)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	clusterKey = info.ClusterID
+	// 	elevateReason = info.WebURL
+	// case LoginTypeJira:
+	// 	ohssIssue, err := getClusterInfoFromJira()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if ohssIssue.ClusterID == "" {
+	// 		return fmt.Errorf("clusterID cannot be detected for JIRA issue:%s", args.ohss)
+	// 	}
+	// 	clusterKey = ohssIssue.ClusterID
+	// 	elevateReason = ohssIssue.WebURL
 	case LoginTypeClusterID:
 		logger.Debugf("Cluster Key is given in argument")
 		clusterKey = argv[0]
@@ -196,11 +196,21 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		return fmt.Errorf("login type cannot be detected")
 	}
 
-	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 
 	logger.Debugln("Setting Proxy URL from global options")
 	// Set proxy url to http client
 	proxyURL := globalOpts.ProxyURL
+
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
+	logger.Debugf("proxyURL: %v \n", proxyURL)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	if proxyURL != "" {
 		err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
 
