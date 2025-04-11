@@ -208,6 +208,8 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 	logger.Debugf("proxyURL: %v \n", proxyURL)
 	logger.Debugf("bpConfig.ProxyURL: %v \n", bpConfig.ProxyURL)
+	logger.Debugf("bpConfig.VPNCheckEndpoint: %v \n", bpConfig.VPNCheckEndpoint)
+	logger.Debugf("bpConfig.DisplayClusterInfo: %v \n", bpConfig.DisplayClusterInfo)
 	if proxyURL != "" {
 		err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
 
@@ -229,10 +231,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("err: %v \n", err)
 	logger.Debugf("clusterName: %v \n", clusterName)
 	logger.Debugf("clusterID: %v \n", clusterID)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
 	if err != nil {
 		return err
 	}
@@ -241,17 +239,23 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		"ID":   clusterID,
 		"Name": clusterName}).Infoln("Target cluster")
 
+	logger.Debugf("args.clusterInfo : %v \n", args.clusterInfo )
+
 	if args.clusterInfo {
 		if err := login.PrintClusterInfo(clusterID); err != nil {
 			return fmt.Errorf("failed to print cluster info: %v", err)
 		}
 	}
 
+
+	logger.Debugf("bpConfig.DisplayClusterInfo : %v \n", bpConfig.DisplayClusterInfo )
 	if bpConfig.DisplayClusterInfo {
 		if err := login.PrintClusterInfo(clusterID); err != nil {
 			return fmt.Errorf("failed to print cluster info: %v", err)
 		}
 	}
+
+	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager  )
 
 	if globalOpts.Manager {
 		logger.WithField("Cluster ID", clusterID).Debugln("Finding managing cluster")
@@ -259,6 +263,14 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		targetClusterID := clusterID
 
 		clusterID, clusterName, isHostedControlPlane, err = ocm.DefaultOCMInterface.GetManagingCluster(clusterID)
+
+		logger.Debugf("globalOpts.ProxyURL  : %v \n", globalOpts.ProxyURL)
+		logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
+		logger.Debugf("err  : %v \n", err)
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		if err != nil {
 			return err
 		}
