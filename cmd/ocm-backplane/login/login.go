@@ -372,10 +372,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	if err != nil {
 		return err
 	}
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 
 	logger.Debugln("Check for Cluster Hibernation")
 	// Not great if there's an error checking if the cluster is hibernating, but ignore it for now and continue
@@ -390,7 +386,13 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	}).Debugln("Query backplane-api for proxy url of our target cluster")
 	// Query backplane-api for proxy url
 
+
 	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
+
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
@@ -619,12 +621,12 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 
 	client, err := backplaneapi.DefaultClientUtils.MakeRawBackplaneAPIClientWithAccessToken(api, accessToken)
 
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
 	logger.Debugf("----api-----: %v", api)
 	logger.Debugf("----accessToken-----: %v", accessToken)
 	logger.Debugf("----err-----: %v", err)
@@ -635,8 +637,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 		logger.Debugf("----Failed doLogin-----: %v", err)
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
-
-	logger.Debugf("============clusterID-----: %v", clusterID)
+	logger.Debugf("clusterID-----: %v", clusterID)
 
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 
@@ -657,9 +658,8 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
+
 
 	// Print the whole response if we can't parse it. Eg. 5xx error from http server.
 	if err != nil {
