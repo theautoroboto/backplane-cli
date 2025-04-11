@@ -593,6 +593,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 
 	logger.Debugf("----resp.Body-----: %v", resp.Body)
 	logger.Debugf("----resp.Status-----: %v", resp.Status)
+	logger.Debugf("----resp.Header-----: %v", resp.Header)
 	logger.Debugf("----clusterID-----: %v", clusterID)
 	logger.Debugf("----err-----: %v", err)
 	logger.Debugln("==========================================")
