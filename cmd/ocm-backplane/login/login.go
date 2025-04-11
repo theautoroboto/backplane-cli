@@ -208,10 +208,6 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 	logger.Debugf("proxyURL: %v \n", proxyURL)
 	logger.Debugf("bpConfig.ProxyURL: %v \n", bpConfig.ProxyURL)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
 	if proxyURL != "" {
 		err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
 
@@ -229,6 +225,14 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	logger.Debugln("Extracting target cluster ID and name")
 	clusterID, clusterName, err := ocm.DefaultOCMInterface.GetTargetCluster(clusterKey)
+
+	logger.Debugf("err: %v \n", err)
+	logger.Debugf("clusterName: %v \n", clusterName)
+	logger.Debugf("clusterID: %v \n", clusterID)
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	if err != nil {
 		return err
 	}
@@ -270,6 +274,12 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		// Print the related namespace if login to manager cluster
 		var namespaces map[string]string
 		namespaces, err = listNamespaces(targetClusterID, isHostedControlPlane)
+
+		logger.Debugf("isHostedControlPlane: %v \n", isHostedControlPlane)
+		logger.Debugf("targetClusterID: %v \n", targetClusterID)
+		logger.Debugf("namespaces: %v \n", namespaces)
+		logger.Debugln("==========================================")
+		logger.Debugln("==========================================")
 		if err != nil {
 			return err
 		}
