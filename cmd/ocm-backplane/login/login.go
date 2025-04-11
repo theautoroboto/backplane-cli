@@ -342,16 +342,11 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugln("Extracting backplane URL")
 	// Get Backplane URL
 	bpURL := globalOpts.BackplaneURL
-	logger.Debugf("bpURL  : %v \n", bpURL)
 	if bpURL == "" {
 		bpURL = bpConfig.URL
 	}
+	logger.Debugf("bpURL  : %v \n", bpURL)
 	logger.Debugf("bpConfig.URL  : %v \n", bpConfig.URL)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
-
 
 	if bpURL == "" {
 		return errors.New("empty backplane url - check your backplane-cli configuration")
@@ -359,6 +354,9 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	logger.Debugf("Using backplane URL: %s\n", bpURL)
 	backplaneResolution, err := getBackplaneCNAME(bpURL)
+	logger.Debugf("err  : %v \n", err)
+	logger.Debugf("backplaneResolution  : %v \n", backplaneResolution)
+
 	if err != nil {
 		logger.Warn(err.Error())
 	} else {
@@ -368,9 +366,16 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	// Get ocm access token
 	accessToken, err := ocm.DefaultOCMInterface.GetOCMAccessToken()
+	logger.Debugf("accessToken  : %v \n", accessToken)
+	logger.Debugf("err  : %v \n", err)
+
 	if err != nil {
 		return err
 	}
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 
 	logger.Debugln("Check for Cluster Hibernation")
 	// Not great if there's an error checking if the cluster is hibernating, but ignore it for now and continue
