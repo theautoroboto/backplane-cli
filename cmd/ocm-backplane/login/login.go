@@ -585,8 +585,8 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugf("----api-----: %v", api)
 	logger.Debugf("----accessToken-----: %v", accessToken)
 	logger.Debugf("----err-----: %v", err)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
 
 	if err != nil {
 		logger.Debugf("----Failed doLogin-----: %v", err)
