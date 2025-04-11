@@ -97,8 +97,8 @@ func (cfg *QueryConfig) GetCloudConsole() (*ConsoleResponse, error) {
 		}
 		return &ConsoleResponse{ConsoleLink: signinFederationURL.String()}, nil
 	} else {
-	return cfg.getCloudConsoleFromPublicAPI(ocmToken)
-	// }
+		return cfg.getCloudConsoleFromPublicAPI(ocmToken)
+	}
 }
 
 // GetCloudConsole returns console response calling to public Backplane API
