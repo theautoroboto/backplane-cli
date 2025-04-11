@@ -255,6 +255,9 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	}
 
 	logger.Debugf("globalOpts.Manager  : %v \n", globalOpts.Manager)
+	logger.Debugf("globalOpts.Service  : %v \n", globalOpts.Service)
+	logger.Debugf("args.kubeConfigPath  : %v \n", args.kubeConfigPath)
+	logger.Debugf("globalOpts.BackplaneURL  : %v \n", globalOpts.BackplaneURL)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
