@@ -155,7 +155,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("##############----bpConfig.AssumeInitialArn----: %v", bpConfig.AssumeInitialArn)
 	logger.Debugf("##############----bpConfig.VPNCheckEndpoint----: %v", bpConfig.VPNCheckEndpoint)
 	logger.Debugf("##############----bpConfig.ProxyCheckEndpoint----: %v", bpConfig.ProxyCheckEndpoint)
-	logger.Debugf("wwwwwwwwwwwww----err-----: %v", err)
+	logger.Debugf("##############----err-----: %v", err)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	
@@ -346,6 +346,8 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		"clusterID": clusterID,
 	}).Debugln("Query backplane-api for proxy url of our target cluster")
 	// Query backplane-api for proxy url
+	logger.Debugf("----bpURL-----: %v", bpURL)
+	logger.Debugf("----clusterID-----: %v", clusterID)
 
 	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
 
