@@ -593,6 +593,8 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
 
+	logger.Debugf("============clusterID-----: %v", clusterID)
+	logger.Debugf("============context.TODO()-----: %v", context.TODO())
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 
 	logger.Debugf("----resp.Body-----: %v", resp.Body)
