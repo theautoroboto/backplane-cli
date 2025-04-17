@@ -629,7 +629,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	// logger.Debugln("==========================================")
 	logger.Debugf("----api-----: %v", api)
 	logger.Debugf("----accessToken-----: %v", accessToken)
-	logger.Debugf("----err-----: %v", err)
+	logger.Debugf("--ope--err-----: %v", err)
 	// logger.Debugln("==========================================")
 	// logger.Debugln("==========================================")
 
