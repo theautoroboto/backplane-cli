@@ -398,7 +398,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugln("==========================================")
 	logger.Debugf("----bpURL-----: %v", bpURL)
 	logger.Debugf("----clusterID-----: %v", clusterID)
-	logger.Debugf("----err-----: %v", err)
+	// logger.Debugf("----err-----: %v", err)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 
@@ -637,7 +637,6 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 		logger.Debugf("----Failed doLogin-----: %v", err)
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
-	logger.Debugf("clusterID-----: %v", clusterID)
 
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 
@@ -654,7 +653,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugf("----resp.Request.URL-----: %v", resp.Request.URL)
 	logger.Debugf("----resp.Request.RequestURI-----: %v", resp.Request.RequestURI)
 	logger.Debugf("----clusterID-----: %v", clusterID)
-	logger.Debugf("----err-----: %v", err)
+	// logger.Debugf("----err-----: %v", err)
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
