@@ -641,6 +641,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debug("loginCluster")
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 	logger.Debug("loggedInCluster")
+		logger.Debugf("----err-----: %v", err)
 
 	// logger.Debugf("----resp.Body-----: %v", resp.Body)
 	// logger.Debugf("----resp.Status-----: %v", resp.Status)
