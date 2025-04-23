@@ -386,13 +386,13 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	}).Debugln("Query backplane-api for proxy url of our target cluster")
 	// Query backplane-api for proxy url
 
-
-	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
-
 	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
+	bpAPIClusterURL, err := doLogin(bpURL, clusterID, *accessToken)
+
+
 
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
