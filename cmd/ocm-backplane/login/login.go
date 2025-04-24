@@ -638,15 +638,18 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 		return "", fmt.Errorf("unable to create backplane api client")
 	}
 
+	logger.Debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WE FAIL HERE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
+	logger.Debugln("==========================================")
 	logger.Debug("loginCluster")
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 	logger.Debug("loggedInCluster")
-	logger.Debugf("----err-----: %v", err)
 
-	// logger.Debugf("----resp.Body-----: %v", resp.Body)
+	logger.Debugf("----err-----: %v", err)
 	logger.Debugf("----resp.Status-----: %v", resp.Status)
 	logger.Debugf("----resp.Header-----: %v", resp.Header)
-	// logger.Debugf("----resp.TLS-----: %v", resp.TLS)
+	logger.Debugf("----Body-----: %v", resp.Body)
 	logger.Debugf("----resp.Request-----: %v", resp.Request)
 	logger.Debugf("----resp.StatusCode-----: %v", resp.StatusCode)
 	logger.Debugf("----resp.Request.Method-----: %v", resp.Request.Method)
@@ -660,7 +663,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
 	logger.Debugln("==========================================")
-	logger.Debugln("88888888888888888888888888888888888888888888888888888888888888888888888888888888888888")
+	logger.Debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END FAILURE OUTPUT~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
 	// Print the whole response if we can't parse it. Eg. 5xx error from http server.
@@ -676,6 +679,7 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	}
 
 	err = backplaneapi.CheckResponseDeprecation(resp)
+	logger.Debugf("----CheckResponseDeprecation---err-----: %v", err)
 
 	if errors.Is(err, backplaneapi.ErrDeprecation) {
 		logger.Warnf("The server indicated that backplane-cli version %s is deprecated. Please update as soon as possible.", info.DefaultInfoService.GetVersion())
