@@ -627,9 +627,10 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	// logger.Debugln("==========================================")
 	// logger.Debugln("==========================================")
 	// logger.Debugln("==========================================")
-	// logger.Debugf("----api-----: %v", api)
-	// logger.Debugf("----accessToken-----: %v", accessToken)
-	// logger.Debugf("--ope--err-----: %v", err)
+	logger.Debugf("----api-----: %v", api)
+	logger.Debugf("----accessToken-----: %v", accessToken)
+	logger.Debugf("----clusterID-----: %v", clusterID)
+	logger.Debugf("--ope--err-----: %v", err)
 	// logger.Debugln("==========================================")
 	// logger.Debugln("==========================================")
 
@@ -639,9 +640,6 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	}
 
 	logger.Debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WE FAIL HERE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
 	logger.Debug("loginCluster")
 	resp, err := client.LoginCluster(context.TODO(), clusterID)
 	logger.Debug("loggedInCluster")
@@ -660,9 +658,9 @@ func doLogin(api, clusterID, accessToken string) (string, error) {
 	logger.Debugf("----resp.Request.RequestURI-----: %v", resp.Request.RequestURI)
 	logger.Debugf("----clusterID-----: %v", clusterID)
 	logger.Debugf("----err-----: %v", err)
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
-	logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
+	// logger.Debugln("==========================================")
 	logger.Debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~END FAILURE OUTPUT~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
