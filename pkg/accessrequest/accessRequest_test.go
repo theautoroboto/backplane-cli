@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/andygrunwald/go-jira"
-	acctrspv1 "github.com/openshift-online/ocm-sdk-go/accesstransparency/v1"
+	// acctrspv1 "github.com/openshift-online/ocm-sdk-go/accesstransparency/v1"
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 	"github.com/openshift/backplane-cli/pkg/backplaneapi"
 	backplaneapiMock "github.com/openshift/backplane-cli/pkg/backplaneapi/mocks"
