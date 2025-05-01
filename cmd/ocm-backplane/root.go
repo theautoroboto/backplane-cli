@@ -22,7 +22,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
+	// "github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/config"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/console"
