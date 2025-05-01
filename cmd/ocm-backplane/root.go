@@ -67,7 +67,7 @@ func init() {
 	globalflags.AddVerbosityFlag(rootCmd)
 
 	// Register sub-commands
-	rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
+	// rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
 	rootCmd.AddCommand(config.NewConfigCmd())
 	rootCmd.AddCommand(cloud.CloudCmd)
