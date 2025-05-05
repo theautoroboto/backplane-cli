@@ -39,6 +39,7 @@ const (
 	LoginTypeExistingKubeConfig = "kube-config"
 	LoginTypePagerduty          = "pagerduty"
 	LoginTypeJira               = "jira"
+	LoginTypeGovcloud           = "govcloud"
 )
 
 var (
@@ -50,6 +51,7 @@ var (
 		ohss             string
 		clusterInfo      bool
 		remediation      string
+		govcloud		 bool
 	}
 
 	// loginType derive the login type based on flags and args
@@ -132,6 +134,11 @@ func init() {
 		"cluster-info",
 		false, "Print basic cluster information after login",
 	)
+	flags.BoolVar(
+		&args.govcloud,
+		"govcloud",
+		false, "Run the cli running in govcloud mode",
+	)
 }
 
 // TODO there is something about the proxy config in relation to overriding with --url
@@ -146,6 +153,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	logger.Debugf("Extracting Backplane configuration")
 	// Get Backplane configuration
 	bpConfig, err := config.GetBackplaneConfiguration()
+	logger.Debugf("Done Extracting Backplane configuration")
 	if err != nil {
 		return err
 	}
