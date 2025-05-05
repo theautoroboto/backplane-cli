@@ -32,6 +32,9 @@ func PrintClusterInfo(clusterID string) error {
 	if !strings.Contains(clusterInfo.Region().ID(), "us-gov-east-1") && !strings.Contains(clusterInfo.Region().ID(), "us-gov-west-1") {
 		GetLimitedSupportStatus(clusterID)
 		GetAccessProtectionStatus(clusterID)
+	} else {
+		fmt.Printf("%-25s %s\n", "Access Protection:", "Not applicable in FedRAMP regions")
+		fmt.Printf("%-25s %s\n", "Limited Support Status:", "Not applicable in FedRAMP regions")	
 	}
 
 	logger.Info("Basic cluster information displayed.")
