@@ -41,40 +41,42 @@ type BackplaneConfiguration struct {
 	PagerDutyAPIKey             string                          `json:"pd-key"`
 	JiraBaseURL                 string                          `json:"jira-base-url"`
 	JiraToken                   string                          `json:"jira-token"`
-	// JiraConfigForAccessRequests AccessRequestsJiraConfiguration `json:"jira-config-for-access-requests"`
+	JiraConfigForAccessRequests AccessRequestsJiraConfiguration `json:"jira-config-for-access-requests"`
 	VPNCheckEndpoint            string                          `json:"vpn-check-endpoint"`
 	ProxyCheckEndpoint          string                          `json:"proxy-check-endpoint"`
 	DisplayClusterInfo          bool                            `json:"display-cluster-info"`
+	Govcloud                    bool                            `json:"govcloud"`
 }
 
 const (
-	prodEnvNameKey                 = "prod-env-name"
-	jiraBaseURLKey                 = "jira-base-url"
-	JiraTokenViperKey              = "jira-token"
-	// JiraConfigForAccessRequestsKey = "jira-config-for-access-requests"
-	prodEnvNameDefaultValue        = "production"
-	JiraBaseURLDefaultValue        = "https://issues.redhat.com"
-	proxyTestTimeout               = 10 * time.Second
+	prodEnvNameKey                      = "prod-env-name"
+	jiraBaseURLKey                      = "jira-base-url"
+	JiraTokenViperKey                   = "jira-token"
+	JiraConfigForAccessRequestsKey      = "jira-config-for-access-requests"
+	prodEnvNameDefaultValue             = "production"
+	JiraBaseURLDefaultValue             = "https://issues.redhat.com"
+	proxyTestTimeout                    = 10 * time.Second
+	Govcloud                       bool = false
 )
 
-// var JiraConfigForAccessRequestsDefaultValue = AccessRequestsJiraConfiguration{
-// 	DefaultProject:   "SDAINT",
-// 	DefaultIssueType: "Story",
-// 	ProdProject:      "OHSS",
-// 	ProdIssueType:    "Incident",
-// 	ProjectToTransitionsNames: map[string]JiraTransitionsNamesForAccessRequests{
-// 		"SDAINT": {
-// 			OnCreation: "In Progress",
-// 			OnApproval: "In Progress",
-// 			OnError:    "Closed",
-// 		},
-// 		"OHSS": {
-// 			OnCreation: "Pending Customer",
-// 			OnApproval: "New",
-// 			OnError:    "Cancelled",
-// 		},
-// 	},
-// }
+var JiraConfigForAccessRequestsDefaultValue = AccessRequestsJiraConfiguration{
+	DefaultProject:   "SDAINT",
+	DefaultIssueType: "Story",
+	ProdProject:      "OHSS",
+	ProdIssueType:    "Incident",
+	ProjectToTransitionsNames: map[string]JiraTransitionsNamesForAccessRequests{
+		"SDAINT": {
+			OnCreation: "In Progress",
+			OnApproval: "In Progress",
+			OnError:    "Closed",
+		},
+		"OHSS": {
+			OnCreation: "Pending Customer",
+			OnApproval: "New",
+			OnError:    "Cancelled",
+		},
+	},
+}
 
 // GetConfigFilePath returns the Backplane CLI configuration filepath
 func GetConfigFilePath() (string, error) {
@@ -98,9 +100,12 @@ func GetConfigFilePath() (string, error) {
 func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	viper.SetDefault(prodEnvNameKey, prodEnvNameDefaultValue)
 	viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
-	// viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
+	viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
+	viper.SetDefault("govcloud", Govcloud)
 
+	logger.Debugf("GetConfigFilePath() called")
 	filePath, err := GetConfigFilePath()
+
 	if err != nil {
 		return bpConfig, err
 	}
@@ -112,6 +117,8 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		// Load config file
 		viper.SetConfigFile(filePath)
 		viper.SetConfigType("json")
+
+		logger.Debugf("Reading config file %s", filePath)
 
 		if err := viper.ReadInConfig(); err != nil {
 			return bpConfig, err
@@ -135,6 +142,7 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 
 	// Warn if user has explicitly defined backplane URL via env
 	url, ok := getBackplaneEnv(info.BackplaneURLEnvName)
+	logger.Debugf("URL from env: %s", url)
 	if ok {
 		logger.Warn(fmt.Sprintf("Manual URL configuration is deprecated, please unset the environment %s", info.BackplaneURLEnvName))
 		bpConfig.URL = url
@@ -145,11 +153,13 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
-	// proxyURL is required
-	proxyInConfigFile := viper.GetStringSlice("proxy-url")
-	proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
-	if proxyURL != "" {
-		bpConfig.ProxyURL = &proxyURL
+	if !(viper.GetBool("govcloud")) {
+		// proxyURL is required
+		proxyInConfigFile := viper.GetStringSlice("proxy-url")
+		proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
+		if proxyURL != "" {
+			bpConfig.ProxyURL = &proxyURL
+		}
 	}
 
 	bpConfig.SessionDirectory = viper.GetString("session-dir")
@@ -174,17 +184,17 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.JiraToken = viper.GetString(JiraTokenViperKey)
 
 	// JIRA config for access requests is optional as there is a default value
-	// err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
+	err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
 
-	// if err != nil {
-	// 	logger.Warnf("failed to unmarshal '%s' entry as json in '%s' config file: %v", JiraConfigForAccessRequestsKey, filePath, err)
-	// } else {
-	// 	for _, project := range []string{bpConfig.JiraConfigForAccessRequests.DefaultProject, bpConfig.JiraConfigForAccessRequests.ProdProject} {
-	// 		if _, isKnownProject := bpConfig.JiraConfigForAccessRequests.ProjectToTransitionsNames[project]; !isKnownProject {
-	// 			logger.Warnf("content unmarshalled from '%s' in '%s' config file is inconsistent: no transitions defined for project '%s'", JiraConfigForAccessRequestsKey, filePath, project)
-	// 		}
-	// 	}
-	// }
+	if err != nil {
+		logger.Warnf("failed to unmarshal '%s' entry as json in '%s' config file: %v", JiraConfigForAccessRequestsKey, filePath, err)
+	} else {
+		for _, project := range []string{bpConfig.JiraConfigForAccessRequests.DefaultProject, bpConfig.JiraConfigForAccessRequests.ProdProject} {
+			if _, isKnownProject := bpConfig.JiraConfigForAccessRequests.ProjectToTransitionsNames[project]; !isKnownProject {
+				logger.Warnf("content unmarshalled from '%s' in '%s' config file is inconsistent: no transitions defined for project '%s'", JiraConfigForAccessRequestsKey, filePath, project)
+			}
+		}
+	}
 
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
 	bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
@@ -306,9 +316,11 @@ loop:
 
 func validateConfig() error {
 
-	// Validate the proxy url
-	if viper.GetStringSlice("proxy-url") == nil && os.Getenv(info.BackplaneProxyEnvName) == "" {
-		return fmt.Errorf("proxy-url must be set explicitly in either config file or via the environment HTTPS_PROXY")
+	if !(viper.GetBool("govcloud")) {
+		// Validate the proxy url
+		if viper.GetStringSlice("proxy-url") == nil && os.Getenv(info.BackplaneProxyEnvName) == "" {
+			return fmt.Errorf("proxy-url must be set explicitly in either config file or via the environment HTTPS_PROXY")
+		}
 	}
 
 	return nil
