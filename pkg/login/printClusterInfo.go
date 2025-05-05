@@ -48,8 +48,10 @@ func GetAccessProtectionStatus(clusterID string) string {
 		defer ocmConnection.Close()
 	}
 	
+	// Don't run this in FedRAMP regions
+	clusterInfo, err := ocm.DefaultOCMInterface.GetClusterInfoByID(clusterID)
 	enabled, err := ocm.DefaultOCMInterface.IsClusterAccessProtectionEnabled(ocmConnection, clusterID)
-	if err != nil {
+	if err != nil && !strings.Contains(clusterInfo.Region().ID(), "us-gov-east-1") && !strings.Contains(clusterInfo.Region().ID(), "us-gov-west-1"){
 		fmt.Println("Error retrieving access protection status: ", err)
 		return "Error retrieving access protection status: " + err.Error()
 	}
