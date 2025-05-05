@@ -54,12 +54,16 @@ func setConfig(cmd *cobra.Command, args []string) error {
 		}
 
 		Govcloud := viper.GetBool("govcloud")
-		if Govcloud != false {
+		if (Govcloud) {
 			// if the govcloud flag is set, set the Govcloud field in the config
-			// to true. This is used to determine if the backplane URL should be
-			// https://backplane.us-gov.redhat.com or https://backplane.redhat.com
-			// when creating the backplane client.}
-			bpConfig.Govcloud = Govcloud
+			// to true. This is used to determine which backplane URL 
+			// when creating the backplane client.
+			bpConfig.Govcloud = true
+		} else {
+			// if the govcloud flag is not set, set the Govcloud field in the config
+			// to false. This is used to determine which backplane URL 
+			// when creating the backplane client.
+			bpConfig.Govcloud = false
 		}
 
 		bpConfig.SessionDirectory = viper.GetString("session-dir")
