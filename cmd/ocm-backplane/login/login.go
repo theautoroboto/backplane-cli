@@ -30,6 +30,7 @@ import (
 	"github.com/openshift/backplane-cli/pkg/ocm"
 	"github.com/openshift/backplane-cli/pkg/pagerduty"
 	"github.com/openshift/backplane-cli/pkg/utils"
+	// "github.com/openshift/backplane-cli/pkg/fedramp"
 )
 
 // Environment variable that for setting PS1
@@ -90,10 +91,26 @@ var (
 	ohssService *jira.OHSSService
 )
 
+var govcloud = &cobra.Command{
+    Use:   "example",
+    Short: "A brief description of your command",
+    Run: func(cmd *cobra.Command, args []string) {
+        // Access the flag value
+        govcloud, _ := cmd.Flags().GetBool("verbose")
+        if govcloud {
+            fmt.Println("govcloud mode is on")
+        } else {
+            fmt.Println("govcloud mode is off")
+        }
+    },
+}
+
 func init() {
 	flags := LoginCmd.Flags()
 	// Add global flags
 	globalflags.AddGlobalFlags(LoginCmd, globalOpts)
+	govcloud.Flags().Bool("govcloud", false, "Enable govcloud output")
+
 
 	flags.BoolVarP(
 		&args.multiCluster,
@@ -137,8 +154,10 @@ func init() {
 	flags.BoolVar(
 		&args.govcloud,
 		"govcloud",
-		false, "Run the cli running in govcloud mode",
+		false,
+		"Uses the FedRAMP High OpenShift Cluster Manager API for creating clusters in AWS GovCloud regions",
 	)
+	// fedramp.AddFlag(flags)
 }
 
 // TODO there is something about the proxy config in relation to overriding with --url
