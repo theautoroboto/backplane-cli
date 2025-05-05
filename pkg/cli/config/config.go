@@ -177,13 +177,14 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
 	if !(viper.GetBool("is-it-govcloud")) {
-		logger.Debug("No pagerDuty token to use in govcloud")
 		pagerDutyAPIKey := viper.GetString("pd-key")
 		if pagerDutyAPIKey != "" {
 			bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
 		} else {
 			logger.Info("No PagerDuty API Key configuration available. This will result in failure of `ocm-backplane login --pd <incident-id>` command.")
 		}
+	} else {
+		logger.Debug("No PagerDuty API Key to use in govcloud")
 	}
 
 	// OCM prod env name is optional as there is a default value
