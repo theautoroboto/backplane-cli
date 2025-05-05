@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/term"
 	"gopkg.in/AlecAivazis/survey.v1"
+	"strconv"
 
 	"github.com/openshift/backplane-cli/pkg/cli/config"
 )
@@ -52,6 +53,15 @@ func setConfig(cmd *cobra.Command, args []string) error {
 			bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
 		}
 
+		Govcloud := viper.GetBool("govcloud")
+		if Govcloud != false {
+			// if the govcloud flag is set, set the Govcloud field in the config
+			// to true. This is used to determine if the backplane URL should be
+			// https://backplane.us-gov.redhat.com or https://backplane.redhat.com
+			// when creating the backplane client.}
+			bpConfig.Govcloud = Govcloud
+		}
+
 		bpConfig.SessionDirectory = viper.GetString("session-dir")
 		bpConfig.JiraToken = viper.GetString(config.JiraTokenViperKey)
 	}
@@ -93,8 +103,11 @@ func setConfig(cmd *cobra.Command, args []string) error {
 		bpConfig.PagerDutyAPIKey = args[1]
 	case config.JiraTokenViperKey:
 		bpConfig.JiraToken = args[1]
+	case GovcloudVar:
+		bpConfig.Govcloud, err = strconv.ParseBool(args[1])
+		fmt.Fprintf(os.Stdout, "%t\n", bpConfig.Govcloud)
 	default:
-		return fmt.Errorf("supported config variables are %s, %s, %s, %s & %s", URLConfigVar, ProxyURLConfigVar, SessionConfigVar, PagerDutyAPIConfigVar, config.JiraTokenViperKey)
+		return fmt.Errorf("supported config variables are %s, %s, %s, %s, %s & %s", URLConfigVar, ProxyURLConfigVar, SessionConfigVar, PagerDutyAPIConfigVar, config.JiraTokenViperKey, GovcloudVar)
 	}
 
 	viper.SetConfigType("json")
@@ -103,6 +116,7 @@ func setConfig(cmd *cobra.Command, args []string) error {
 	viper.Set(SessionConfigVar, bpConfig.SessionDirectory)
 	viper.Set(PagerDutyAPIConfigVar, bpConfig.PagerDutyAPIKey)
 	viper.Set(config.JiraTokenViperKey, bpConfig.JiraToken)
+	viper.Set(GovcloudVar, bpConfig.Govcloud)
 
 	err = viper.WriteConfigAs(configPath)
 	if err != nil {
