@@ -78,10 +78,11 @@ func RunElevate(argv []string) error {
 	}()
 
 	logger.Debugln("Executing command with temporary kubeconfig as backplane-cluster-admin")
-	
+
 	logger.Debugln("argv[1:]", argv[1:])
 	ocCmd := ExecCmd("oc", argv[1:]...)
 	ocCmd.Env = append(ocCmd.Env, os.Environ()...)
+	logger.Debugln("ocCmd.Env ", ocCmd.Env)
 	ocCmd.Stdin = os.Stdin
 	ocCmd.Stderr = os.Stderr
 	ocCmd.Stdout = os.Stdout
