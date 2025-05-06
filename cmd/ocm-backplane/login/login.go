@@ -112,7 +112,7 @@ func init() {
 	globalflags.AddGlobalFlags(LoginCmd, globalOpts)
 	
 	// Add local flags
-	LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "govcloud", false, "Enable govcloud output")
+	LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "", false, "Enable govcloud")
 
 	flags.BoolVarP(
 		&args.multiCluster,

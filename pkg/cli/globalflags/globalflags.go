@@ -10,6 +10,7 @@ type GlobalOptions struct {
 	ProxyURL     string
 	Manager      bool
 	Service      bool
+	GovCloud     bool
 }
 
 func AddGlobalFlags(cmd *cobra.Command, opts *GlobalOptions) {
@@ -36,5 +37,11 @@ func AddGlobalFlags(cmd *cobra.Command, opts *GlobalOptions) {
 		"service",
 		false,
 		"Login to service cluster for the given hosted cluster or management cluster.",
+	)
+	cmd.PersistentFlags().BoolVar(
+		&opts.GovCloud,
+		"govcloud",
+		false,
+		"Used to identify FedRAMP govcloud regions",
 	)
 }
