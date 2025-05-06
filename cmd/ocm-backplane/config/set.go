@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 	"golang.org/x/term"
 	"gopkg.in/AlecAivazis/survey.v1"
 	"strconv"
@@ -54,6 +55,9 @@ func setConfig(cmd *cobra.Command, args []string) error {
 		}
 
 		Govcloud := viper.GetBool("govcloud")
+		log.Printf("viper.GetBool(\"govcloud\")::::: %v", viper.GetBool("govcloud"))
+		log.Printf("bpConfig.Govcloud::::: %v", bpConfig.Govcloud)
+
 		if (Govcloud) {
 			// if the govcloud flag is set, set the Govcloud field in the config
 			// to true. This is used to determine which backplane URL 

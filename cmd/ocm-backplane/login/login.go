@@ -39,8 +39,9 @@ const (
 	LoginTypeExistingKubeConfig = "kube-config"
 	LoginTypePagerduty          = "pagerduty"
 	LoginTypeJira               = "jira"
-	LoginTypeGovcloud           = "govcloud"
 )
+
+var govcloud bool
 
 var (
 	args struct {
@@ -90,28 +91,13 @@ var (
 	ohssService *jira.OHSSService
 )
 
-var govcloud bool
-// var govcloud = &cobra.Command{
-//     Use:   "govcloud",
-//     Short: "A brief description of your command",
-//     Run: func(cmd *cobra.Command, args []string) {
-//         // Access the flag value
-//         govcloud, _ := cmd.Flags().GetBool("verbose")
-//         if govcloud {
-//             fmt.Println("govcloud mode is on")
-//         } else {
-//             fmt.Println("govcloud mode is off")
-//         }
-//     },
-// }
-
 func init() {
 	flags := LoginCmd.Flags()
 	// Add global flags
 	globalflags.AddGlobalFlags(LoginCmd, globalOpts)
 	
-	// Add local flags
-	LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "", false, "Enable govcloud")
+	// // Add local flags
+	// LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "", false, "Enable govcloud")
 
 	flags.BoolVarP(
 		&args.multiCluster,
@@ -139,7 +125,7 @@ func init() {
 		"namespace",
 		"n",
 		"default",
-		"The  default namespace for a user to execute commands in",
+		"The default namespace for a user to execute commands in",
 	)
 	flags.StringVar(
 		&args.ohss,
@@ -152,12 +138,6 @@ func init() {
 		"cluster-info",
 		false, "Print basic cluster information after login",
 	)
-	// flags.BoolVar(
-	// 	&args.govcloud,
-	// 	"govcloud",
-	// 	false,
-	// 	"Uses the FedRAMP High OpenShift Cluster Manager API for creating clusters in AWS GovCloud regions",
-	// )
 }
 
 // TODO there is something about the proxy config in relation to overriding with --url
