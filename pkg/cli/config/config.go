@@ -103,6 +103,7 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
 	viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
 	viper.SetDefault(GovcloudDefaultValueKey, GovcloudDefaultValue)
+	bpConfig.Govcloud = viper.GetBool("govcloud")
 
 	filePath, err := GetConfigFilePath()
 
@@ -129,10 +130,14 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		logger.Warn(err)
 	}
 
-	// Check if user has explicitly defined proxy; it has higher precedence over the config file
-	err = viper.BindEnv("proxy-url", info.BackplaneProxyEnvName)
-	if err != nil {
-		return bpConfig, err
+	if !(bpConfig.Govcloud) {
+		// Check if user has explicitly defined proxy; it has higher precedence over the config file
+		err = viper.BindEnv("proxy-url", info.BackplaneProxyEnvName)
+		if err != nil {
+			return bpConfig, err
+		}
+	} else {
+		logger.Debug("This is govcloud, no proxy to use")
 	}
 
 	// Warn user if url defined in the config file
@@ -153,10 +158,6 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
-	bpConfig.Govcloud = viper.GetBool("govcloud")
-	logger.Debug(":::::viper.GetBool(\"govcloud\"):::::", viper.GetBool("govcloud"))
-	logger.Debug(":::::bpConfig.Govcloud:::::", bpConfig.Govcloud)
-
 	// Proxy is not used in FedRAMP
 	if !(bpConfig.Govcloud) {
 		// proxyURL is required from commercial environment
@@ -174,7 +175,6 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.DisplayClusterInfo = viper.GetBool("display-cluster-info")
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
-	logger.Debug("Is it govcloud??????", bpConfig.Govcloud)
 	if !(bpConfig.Govcloud) {
 		pagerDutyAPIKey := viper.GetString("pd-key")
 		if pagerDutyAPIKey != "" {
@@ -197,7 +197,6 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 
 	// JIRA config for access requests is optional as there is a default value
 	err = viper.UnmarshalKey(JiraConfigForAccessRequestsKey, &bpConfig.JiraConfigForAccessRequests)
-
 	if err != nil {
 		logger.Warnf("failed to unmarshal '%s' entry as json in '%s' config file: %v", JiraConfigForAccessRequestsKey, filePath, err)
 	} else {
@@ -210,9 +209,13 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
 	// Don't even check for FedRAMP
-	if viper.GetBool("govcloud") {
+	if !(viper.GetBool("govcloud")) {
 		bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
 		bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
+	} else {
+		logger.Debug("This is govcloud, no VPN and Proxy check endpoints to use")
+		bpConfig.VPNCheckEndpoint = ""
+		bpConfig.ProxyCheckEndpoint = ""
 	}
 
 	return bpConfig, nil
