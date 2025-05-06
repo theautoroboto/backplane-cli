@@ -173,9 +173,9 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	if err != nil {
 		return err
 	}
-	logger.Debugf("Backplane Config File Contains: %v \n", bpConfig)
-	logger.Debugf("Is this govcloud: %v \n", bpConfig.Govcloud)
-	logger.Debugf("bpConfig.URL: %v \n", bpConfig.URL)
+	// logger.Debugf("Backplane Config File Contains: %v \n", bpConfig)
+	// logger.Debugf("Is this govcloud: %v \n", bpConfig.Govcloud)
+	// logger.Debugf("bpConfig.URL: %v \n", bpConfig.URL)
 
 	// login to the cluster based on login type
 	logger.Debugf("Extracting Backplane Cluster ID")
@@ -432,13 +432,17 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 	rc.Contexts[targetContextNickName] = targetContext
 	rc.CurrentContext = targetContextNickName
 
-	// Add elevate reason to kubeconfig context
-	if elevateReason != "" {
-		elevationReasons, err := login.SaveElevateContextReasons(rc, elevateReason)
-		if err != nil {
-			return err
+	if !(bpConfig.Govcloud) {
+		// Add elevate reason to kubeconfig context
+		if elevateReason != "" {
+			elevationReasons, err := login.SaveElevateContextReasons(rc, elevateReason)
+			if err != nil {
+				return err
+			}
+			logger.Infof("save elevate reason: %s\n", elevationReasons)
 		}
-		logger.Infof("save elevate reason: %s\n", elevationReasons)
+	} else {
+		logger.Info("Govcloud identified, no elevate reason to save")
 	}
 
 	logger.Debugln("Saving new API config")
