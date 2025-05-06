@@ -57,6 +57,7 @@ const (
 	JiraBaseURLDefaultValue             = "https://issues.redhat.com"
 	proxyTestTimeout                    = 10 * time.Second
 	GovcloudDefaultValue           bool = false
+	GovcloudDefaultValueKey             = "govcloud"
 )
 
 var JiraConfigForAccessRequestsDefaultValue = AccessRequestsJiraConfiguration{
@@ -101,16 +102,8 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	viper.SetDefault(prodEnvNameKey, prodEnvNameDefaultValue)
 	viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
 	viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
-	if !(viper.GetBool("govcloud")) {
-		viper.SetDefault("is-it-govcloud", GovcloudDefaultValue)
-	} else {
-		viper.SetDefault("is-it-govcloud", true)
-		logger.Debugf("govcloud identified")
-		v := viper.GetBool("is-it-govcloud")
-		logger.Debugf("govcloud value: %v", v)
-	}
+	viper.SetDefault(GovcloudDefaultValueKey, GovcloudDefaultValue)
 
-	logger.Debugf("GetConfigFilePath() called")
 	filePath, err := GetConfigFilePath()
 
 	if err != nil {
@@ -160,7 +153,9 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
-	bpConfig.Govcloud = viper.GetBool("is-it-govcloud")
+	bpConfig.Govcloud = viper.GetBool("govcloud")
+	logger.Debug(":::::viper.GetBool(\"govcloud\"):::::", viper.GetBool("govcloud"))
+	logger.Debug(":::::bpConfig.Govcloud:::::", bpConfig.Govcloud)
 
 	// Proxy is not used in FedRAMP
 	if !(bpConfig.Govcloud) {
