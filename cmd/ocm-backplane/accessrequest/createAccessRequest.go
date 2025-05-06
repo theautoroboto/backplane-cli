@@ -10,6 +10,7 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/openshift/backplane-cli/pkg/login"
 	"github.com/openshift/backplane-cli/pkg/ocm"
@@ -92,6 +93,11 @@ func retrieveOrPromptReason(cmd *cobra.Command) string {
 
 // runCreateAccessRequest creates access request for the given cluster
 func runCreateAccessRequest(cmd *cobra.Command, args []string) error {
+
+	if (viper.GetBool("govcloud")) {
+		return nil
+	}
+
 	clusterID, err := accessrequest.GetClusterID(cmd)
 	if err != nil {
 		return fmt.Errorf("failed to compute cluster ID: %v", err)
