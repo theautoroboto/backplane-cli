@@ -32,7 +32,7 @@ func newCreateAccessRequestCmd() *cobra.Command {
 		Short:         "Creates a new pending access request",
 		Args:          cobra.ExactArgs(0),
 		SilenceUsage:  true,
-		SilenceErrors: true,
+		SilenceErrors: false,
 		RunE:          runCreateAccessRequest,
 	}
 
