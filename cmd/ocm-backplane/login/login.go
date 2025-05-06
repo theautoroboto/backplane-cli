@@ -153,12 +153,12 @@ func init() {
 		"cluster-info",
 		false, "Print basic cluster information after login",
 	)
-	flags.BoolVar(
-		&args.govcloud,
-		"govcloud",
-		false,
-		"Uses the FedRAMP High OpenShift Cluster Manager API for creating clusters in AWS GovCloud regions",
-	)
+	// flags.BoolVar(
+	// 	&args.govcloud,
+	// 	"govcloud",
+	// 	false,
+	// 	"Uses the FedRAMP High OpenShift Cluster Manager API for creating clusters in AWS GovCloud regions",
+	// )
 }
 
 // TODO there is something about the proxy config in relation to overriding with --url
