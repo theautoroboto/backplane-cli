@@ -43,6 +43,26 @@ const (
 
 var govcloud bool
 
+var govcloudCmd = &cobra.Command{
+	Use:   "govcloud",
+	Short: "Is this govcloud?",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Check if the flag was explicitly set
+		govcloudFlag, err := cmd.Flags().GetBool("govcloud")
+		if err != nil {
+			fmt.Println("Error retrieving govcloud flag:", err)
+			return
+		}
+
+		if cmd.Flags().Changed("govcloud") {
+			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
+		} else {
+			fmt.Println("GovCloud mode is disabled")
+			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
+		}
+	},
+}
+
 var (
 	args struct {
 		multiCluster     bool
@@ -52,7 +72,7 @@ var (
 		ohss             string
 		clusterInfo      bool
 		remediation      string
-		govcloud		 bool
+		govcloud         bool
 	}
 
 	// loginType derive the login type based on flags and args
@@ -95,9 +115,6 @@ func init() {
 	flags := LoginCmd.Flags()
 	// Add global flags
 	globalflags.AddGlobalFlags(LoginCmd, globalOpts)
-	
-	// // Add local flags
-	// LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "", false, "Enable govcloud")
 
 	flags.BoolVarP(
 		&args.multiCluster,
@@ -157,6 +174,8 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 		return err
 	}
 	logger.Debugf("Backplane Config File Contains: %v \n", bpConfig)
+	logger.Debugf("Is this govcloud: %v \n", bpConfig.Govcloud)
+	logger.Debugf("bpConfig.URL: %v \n", bpConfig.URL)
 
 	// login to the cluster based on login type
 	logger.Debugf("Extracting Backplane Cluster ID")
