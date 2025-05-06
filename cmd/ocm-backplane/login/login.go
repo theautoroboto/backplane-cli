@@ -14,6 +14,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -213,23 +214,26 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 
-	
-	logger.Debugln("Setting Proxy URL from global options")
-	// Set proxy url to http client
-	proxyURL := globalOpts.ProxyURL
-	if proxyURL != "" {
-		err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
+	if !(bpConfig.Govcloud) {
+		logger.Debugln("Setting Proxy URL from global options")
+		// Set proxy url to http client
+		proxyURL := globalOpts.ProxyURL
+		if proxyURL != "" {
+			err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+			logger.Debugf("Using backplane Proxy URL: %s\n", proxyURL)
 		}
-		logger.Debugf("Using backplane Proxy URL: %s\n", proxyURL)
-	}
 
-	if bpConfig.ProxyURL != nil {
-		proxyURL = *bpConfig.ProxyURL
-		logger.Debugln("backplane configuration file also contains a proxy url, using that one instead")
-		logger.Debugf("New backplane Proxy URL: %s\n", proxyURL)
+		if bpConfig.ProxyURL != nil {
+			proxyURL = *bpConfig.ProxyURL
+			logger.Debugln("backplane configuration file also contains a proxy url, using that one instead")
+			logger.Debugf("New backplane Proxy URL: %s\n", proxyURL)
+		}
+	} else {
+		logger.Debugln("govcloud identified, no proxy to use")
 	}
 
 	logger.Debugln("Extracting target cluster ID and name")
