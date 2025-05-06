@@ -160,8 +160,10 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 		}
 	}
 
+	bpConfig.Govcloud = viper.GetBool("is-it-govcloud")
+
 	// Proxy is not used in FedRAMP
-	if !(viper.GetBool("is-it-govcloud")) {
+	if !(bpConfig.Govcloud) {
 		// proxyURL is required from commercial environment
 		proxyInConfigFile := viper.GetStringSlice("proxy-url")
 		proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
@@ -175,7 +177,6 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.SessionDirectory = viper.GetString("session-dir")
 	bpConfig.AssumeInitialArn = viper.GetString("assume-initial-arn")
 	bpConfig.DisplayClusterInfo = viper.GetBool("display-cluster-info")
-	bpConfig.Govcloud = viper.GetBool("is-it-govcloud")
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
 	if !(bpConfig.Govcloud) {
