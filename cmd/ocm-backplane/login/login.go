@@ -91,26 +91,28 @@ var (
 	ohssService *jira.OHSSService
 )
 
-var govcloud = &cobra.Command{
-    Use:   "example",
-    Short: "A brief description of your command",
-    Run: func(cmd *cobra.Command, args []string) {
-        // Access the flag value
-        govcloud, _ := cmd.Flags().GetBool("verbose")
-        if govcloud {
-            fmt.Println("govcloud mode is on")
-        } else {
-            fmt.Println("govcloud mode is off")
-        }
-    },
-}
+var govcloud bool
+// var govcloud = &cobra.Command{
+//     Use:   "govcloud",
+//     Short: "A brief description of your command",
+//     Run: func(cmd *cobra.Command, args []string) {
+//         // Access the flag value
+//         govcloud, _ := cmd.Flags().GetBool("verbose")
+//         if govcloud {
+//             fmt.Println("govcloud mode is on")
+//         } else {
+//             fmt.Println("govcloud mode is off")
+//         }
+//     },
+// }
 
 func init() {
 	flags := LoginCmd.Flags()
 	// Add global flags
 	globalflags.AddGlobalFlags(LoginCmd, globalOpts)
-	govcloud.Flags().Bool("govcloud", false, "Enable govcloud output")
-
+	
+	// Add local flags
+	LoginCmd.Flags().BoolVarP(&govcloud, "govcloud", "govcloud", false, "Enable govcloud output")
 
 	flags.BoolVarP(
 		&args.multiCluster,
@@ -157,7 +159,6 @@ func init() {
 		false,
 		"Uses the FedRAMP High OpenShift Cluster Manager API for creating clusters in AWS GovCloud regions",
 	)
-	// fedramp.AddFlag(flags)
 }
 
 // TODO there is something about the proxy config in relation to overriding with --url
@@ -212,6 +213,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 
+	
 	logger.Debugln("Setting Proxy URL from global options")
 	// Set proxy url to http client
 	proxyURL := globalOpts.ProxyURL
