@@ -86,6 +86,8 @@ func RunElevate(argv []string) error {
 	ocCmd.Stdin = os.Stdin
 	ocCmd.Stderr = os.Stderr
 	ocCmd.Stdout = os.Stdout
+
+	logger.Debugln("ocCmd.Run()")
 	err = ocCmd.Run()
 	logger.Debugln("ERROR", err)
 	if err != nil {
