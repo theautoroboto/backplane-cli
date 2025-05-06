@@ -178,7 +178,7 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.Govcloud = viper.GetBool("is-it-govcloud")
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
-	if !(viper.GetBool("is-it-govcloud")) {
+	if !(bpConfig.Govcloud) {
 		pagerDutyAPIKey := viper.GetString("pd-key")
 		if pagerDutyAPIKey != "" {
 			bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
