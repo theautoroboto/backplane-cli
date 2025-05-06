@@ -175,7 +175,7 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	bpConfig.DisplayClusterInfo = viper.GetBool("display-cluster-info")
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
-	if !(bpConfig.Govcloud) {
+	if !(viper.GetBool("govcloud")) {
 		pagerDutyAPIKey := viper.GetString("pd-key")
 		if pagerDutyAPIKey != "" {
 			bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
