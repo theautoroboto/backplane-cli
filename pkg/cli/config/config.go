@@ -106,6 +106,8 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	} else {
 		viper.SetDefault("is-it-govcloud", true)
 		logger.Debugf("govcloud identified")
+		v := viper.GetBool("is-it-govcloud")
+		logger.Debugf("govcloud value: %v", v)
 	}
 
 	logger.Debugf("GetConfigFilePath() called")
