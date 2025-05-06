@@ -214,10 +214,12 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	logger.Debugf("Backplane Cluster Key is: %v \n", clusterKey)
 
+	// Set proxy url to http client
+	proxyURL := globalOpts.ProxyURL
+	
 	if !(bpConfig.Govcloud) {
 		logger.Debugln("Setting Proxy URL from global options")
-		// Set proxy url to http client
-		proxyURL := globalOpts.ProxyURL
+
 		if proxyURL != "" {
 			err = backplaneapi.DefaultClientUtils.SetClientProxyURL(proxyURL)
 
