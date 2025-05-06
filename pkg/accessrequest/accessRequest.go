@@ -42,6 +42,11 @@ func GetClusterID(cmd *cobra.Command) (string, error) {
 }
 
 func GetAccessRequest(ocmConnection *ocmsdk.Connection, clusterID string) (*acctrspv1.AccessRequest, error) {
+	bpConfig, err := config.GetBackplaneConfiguration()
+	if (bpConfig.Govcloud){
+		return nil, fmt.Errorf("access protection is not used in govcloud:  '%s'", clusterID)
+	}
+
 	isEnabled, err := ocm.DefaultOCMInterface.IsClusterAccessProtectionEnabled(ocmConnection, clusterID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine if access protection is enabled or not for cluster '%s': %v", clusterID, err)
