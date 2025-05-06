@@ -66,6 +66,9 @@ func init() {
 	// Add Verbosity flag for all commands
 	globalflags.AddVerbosityFlag(rootCmd)
 
+	// Add the --govcloud flag
+	rootCmd.PersistentFlags().Bool("govcloud", false, "Enable GovCloud mode")
+
 	// Register sub-commands
 	rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
