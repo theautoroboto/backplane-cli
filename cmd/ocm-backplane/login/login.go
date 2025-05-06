@@ -14,7 +14,6 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -31,7 +30,6 @@ import (
 	"github.com/openshift/backplane-cli/pkg/ocm"
 	"github.com/openshift/backplane-cli/pkg/pagerduty"
 	"github.com/openshift/backplane-cli/pkg/utils"
-	// "github.com/openshift/backplane-cli/pkg/fedramp"
 )
 
 // Environment variable that for setting PS1
@@ -216,7 +214,7 @@ func runLogin(cmd *cobra.Command, argv []string) (err error) {
 
 	// Set proxy url to http client
 	proxyURL := globalOpts.ProxyURL
-	
+
 	if !(bpConfig.Govcloud) {
 		logger.Debugln("Setting Proxy URL from global options")
 
