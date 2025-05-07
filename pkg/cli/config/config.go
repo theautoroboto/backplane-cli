@@ -103,7 +103,6 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	viper.SetDefault(jiraBaseURLKey, JiraBaseURLDefaultValue)
 	viper.SetDefault(JiraConfigForAccessRequestsKey, JiraConfigForAccessRequestsDefaultValue)
 	viper.SetDefault(GovcloudDefaultValueKey, GovcloudDefaultValue)
-	bpConfig.Govcloud = viper.GetBool("govcloud")
 
 	filePath, err := GetConfigFilePath()
 
@@ -129,6 +128,8 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	if err = validateConfig(); err != nil {
 		logger.Warn(err)
 	}
+
+	bpConfig.Govcloud = viper.GetBool("govcloud")
 
 	if !(bpConfig.Govcloud) {
 		// Check if user has explicitly defined proxy; it has higher precedence over the config file
@@ -159,23 +160,30 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 	}
 
 	// Proxy is not used in FedRAMP
-	if !(bpConfig.Govcloud) {
+	// if !(bpConfig.Govcloud) {
 		// proxyURL is required from commercial environment
-		proxyInConfigFile := viper.GetStringSlice("proxy-url")
-		proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
-		if proxyURL != "" {
-			bpConfig.ProxyURL = &proxyURL
-		}
-	} else {
-		logger.Debug("No proxy to use in govcloud")
+	proxyInConfigFile := viper.GetStringSlice("proxy-url")
+	proxyURL := bpConfig.getFirstWorkingProxyURL(proxyInConfigFile)
+	if proxyURL != "" {
+		bpConfig.ProxyURL = &proxyURL
 	}
+
+	if (bpConfig.Govcloud) {
+		str := ""
+		bpConfig.ProxyURL = &str
+	}
+	// } else {
+	// 	logger.Debug("No proxy to use in govcloud")
+	// 	// proxyURL := ""
+	// 	// bpConfig.ProxyURL = proxyURL
+	// }
 
 	bpConfig.SessionDirectory = viper.GetString("session-dir")
 	bpConfig.AssumeInitialArn = viper.GetString("assume-initial-arn")
 	bpConfig.DisplayClusterInfo = viper.GetBool("display-cluster-info")
 
 	// pagerDuty token is optional. Don't even check for FedRAMP
-	if !(viper.GetBool("govcloud")) {
+	if !(bpConfig.Govcloud) {
 		pagerDutyAPIKey := viper.GetString("pd-key")
 		if pagerDutyAPIKey != "" {
 			bpConfig.PagerDutyAPIKey = pagerDutyAPIKey
@@ -209,7 +217,7 @@ func GetBackplaneConfiguration() (bpConfig BackplaneConfiguration, err error) {
 
 	// Load VPN and Proxy check endpoints from the local backplane configuration file
 	// Don't even check for FedRAMP
-	if !(viper.GetBool("govcloud")) {
+	if !(bpConfig.Govcloud) {
 		bpConfig.VPNCheckEndpoint = viper.GetString("vpn-check-endpoint")
 		bpConfig.ProxyCheckEndpoint = viper.GetString("proxy-check-endpoint")
 	} else {

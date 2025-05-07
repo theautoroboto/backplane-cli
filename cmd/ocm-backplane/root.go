@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	// "github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
+	"github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/config"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/console"
@@ -74,7 +74,7 @@ func init() {
 	viper.BindPFlag("govcloud", rootCmd.PersistentFlags().Lookup("govcloud"))
 
 	// Register sub-commands
-	// rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
+	rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
 	rootCmd.AddCommand(config.NewConfigCmd())
 	rootCmd.AddCommand(cloud.CloudCmd)
