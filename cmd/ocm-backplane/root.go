@@ -74,7 +74,7 @@ func init() {
 	viper.BindPFlag("govcloud", rootCmd.PersistentFlags().Lookup("govcloud"))
 
 	// Register sub-commands
-	rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
+	// rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
 	rootCmd.AddCommand(config.NewConfigCmd())
 	rootCmd.AddCommand(cloud.CloudCmd)
