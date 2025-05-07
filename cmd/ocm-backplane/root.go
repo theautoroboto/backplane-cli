@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
+	// "github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/config"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/console"
