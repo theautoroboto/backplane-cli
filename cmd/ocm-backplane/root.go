@@ -71,7 +71,7 @@ func init() {
 	// rootCmd.PersistentFlags().Bool("govcloud", false, "Enable GovCloud mode")
 
 	// Bind the flag to Viper for global access
-	viper.BindPFlag("govcloud", rootCmd.PersistentFlags().Lookup("govcloud"))
+	// viper.BindPFlag("govcloud", rootCmd.PersistentFlags().Lookup("govcloud"))
 
 	// Register sub-commands
 	rootCmd.AddCommand(accessrequest.NewAccessRequestCmd())
