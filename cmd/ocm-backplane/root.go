@@ -68,7 +68,7 @@ func init() {
 	globalflags.AddVerbosityFlag(rootCmd)
 
 	// Add the --govcloud flag as a global flag
-	rootCmd.PersistentFlags().Bool("govcloud", false, "Enable GovCloud mode")
+	// rootCmd.PersistentFlags().Bool("govcloud", false, "Enable GovCloud mode")
 
 	// Bind the flag to Viper for global access
 	viper.BindPFlag("govcloud", rootCmd.PersistentFlags().Lookup("govcloud"))

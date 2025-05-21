@@ -41,27 +41,27 @@ const (
 	LoginTypeJira               = "jira"
 )
 
-var govcloud bool
+// var govcloud bool
 
-var govcloudCmd = &cobra.Command{
-	Use:   "govcloud",
-	Short: "govcloud",
-	Run: func(cmd *cobra.Command, args []string) {
-		// Check if the flag was explicitly set
-		govcloudFlag, err := cmd.Flags().GetBool("govcloud")
-		if err != nil {
-			fmt.Println("Error retrieving govcloud flag:", err)
-			return
-		}
+// var govcloudCmd = &cobra.Command{
+// 	Use:   "govcloud",
+// 	Short: "govcloud",
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		// Check if the flag was explicitly set
+// 		govcloudFlag, err := cmd.Flags().GetBool("govcloud")
+// 		if err != nil {
+// 			fmt.Println("Error retrieving govcloud flag:", err)
+// 			return
+// 		}
 
-		if cmd.Flags().Changed("govcloud") {
-			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
-		} else {
-			fmt.Println("GovCloud mode is disabled")
-			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
-		}
-	},
-}
+// 		if cmd.Flags().Changed("govcloud") {
+// 			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
+// 		} else {
+// 			fmt.Println("GovCloud mode is disabled")
+// 			fmt.Printf("GovCloud mode is set to: %v\n", govcloudFlag)
+// 		}
+// 	},
+// }
 
 var (
 	args struct {
