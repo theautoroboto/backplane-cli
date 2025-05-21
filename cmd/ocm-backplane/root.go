@@ -21,7 +21,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	// "github.com/spf13/viper"
 
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/accessrequest"
 	"github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
