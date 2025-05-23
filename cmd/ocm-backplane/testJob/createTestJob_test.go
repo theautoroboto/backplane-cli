@@ -1,12 +1,17 @@
 package testjob
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
+	"testing"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -360,3 +365,125 @@ echo_touch "Hello"
 		})
 	})
 })
+
+func TestInlineLibrarySourceFiles(t *testing.T) {
+	originalGetGitRepoPath := GetGitRepoPath
+
+	setup := func(t *testing.T) (string, string) {
+		// Create a temporary directory to act as the main script's location
+		scriptDir := t.TempDir()
+		// Create a temporary directory to act as the git repo root
+		repoRootDir := t.TempDir()
+
+		// Mock GetGitRepoPath to return our temporary repo root
+		GetGitRepoPath = exec.Command("echo", repoRootDir)
+		t.Cleanup(func() { GetGitRepoPath = originalGetGitRepoPath })
+
+		return scriptDir, repoRootDir
+	}
+
+	t.Run("No source line", func(t *testing.T) {
+		scriptDir, _ := setup(t)
+		scriptPath := filepath.Join(scriptDir, "main.sh")
+		originalScriptContent := "#!/bin/bash\necho \"Hello, world!\"\n"
+		
+		result, err := inlineLibrarySourceFiles(originalScriptContent, scriptPath)
+		if err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
+		if result != originalScriptContent {
+			t.Errorf("Expected script content to be unchanged, got:\n%s\nWant:\n%s", result, originalScriptContent)
+		}
+	})
+
+	t.Run("Valid source line", func(t *testing.T) {
+		scriptDir, repoRootDir := setup(t)
+		scriptPath := filepath.Join(scriptDir, "main.sh")
+
+		// Create the library file
+		libDir := filepath.Join(repoRootDir, "scripts", "libs")
+		if err := os.MkdirAll(libDir, 0755); err != nil {
+			t.Fatalf("Failed to create lib dir: %v", err)
+		}
+		libPath := filepath.Join(libDir, "my-lib.sh")
+		libContent := "echo \"hello from lib\""
+		if err := os.WriteFile(libPath, []byte(libContent), 0644); err != nil {
+			t.Fatalf("Failed to write lib file: %v", err)
+		}
+
+		originalScriptContent := "#!/bin/bash\nsource /managed-scripts/libs/my-lib.sh\necho \"main script\"\n"
+		
+		result, err := inlineLibrarySourceFiles(originalScriptContent, scriptPath)
+		if err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
+
+		expectedLibEncoded := base64.StdEncoding.EncodeToString([]byte(libContent))
+		expectedSnippetPart := fmt.Sprintf(`echo "%s" | base64 -d > "$TMP_LIB_FILE"`, expectedLibEncoded)
+
+		if !strings.Contains(result, "TMP_LIB_FILE=$(mktemp /tmp/backplane-lib-XXXXXX.sh)") {
+			t.Errorf("Result does not contain mktemp command. Got:\n%s", result)
+		}
+		if !strings.Contains(result, expectedSnippetPart) {
+			t.Errorf("Result does not contain correct base64 decode and redirect. Got:\n%s", result)
+		}
+		if !strings.Contains(result, `source "$TMP_LIB_FILE"`) {
+			t.Errorf("Result does not source the temp file. Got:\n%s", result)
+		}
+		if !strings.Contains(result, `rm "$TMP_LIB_FILE"`) {
+			t.Errorf("Result does not remove the temp file. Got:\n%s", result)
+		}
+		if strings.Contains(result, "source /managed-scripts/libs/my-lib.sh") {
+			t.Errorf("Original source line was not replaced. Got:\n%s", result)
+		}
+		if !strings.HasSuffix(strings.TrimSpace(result), "echo \"main script\"") {
+            t.Errorf("Main script content altered or misplaced. Got:\n%s", result)
+        }
+	})
+
+	t.Run("Library does not exist", func(t *testing.T) {
+		scriptDir, repoRootDir := setup(t) // repoRootDir will be empty of the specific lib
+		scriptPath := filepath.Join(scriptDir, "main.sh")
+
+		// Ensure scripts/libs directory exists, but not the file itself
+		libDir := filepath.Join(repoRootDir, "scripts", "libs")
+		if err := os.MkdirAll(libDir, 0755); err != nil {
+			t.Fatalf("Failed to create lib dir: %v", err)
+		}
+		
+		originalScriptContent := "source /managed-scripts/libs/nonexistent-lib.sh\n"
+		
+		_, err := inlineLibrarySourceFiles(originalScriptContent, scriptPath)
+		if err == nil {
+			t.Fatalf("Expected an error for non-existent library, got nil")
+		}
+		if !strings.Contains(err.Error(), "no such file or directory") && !strings.Contains(err.Error(), "cannot find the path specified") { // OS-dependent error messages
+            t.Errorf("Expected 'no such file' error, got: %v", err)
+        }
+	})
+
+	t.Run("GetGitRepoPath fails", func(t *testing.T) {
+		scriptDir, _ := setup(t)
+		scriptPath := filepath.Join(scriptDir, "main.sh")
+
+		// Mock GetGitRepoPath to return an error
+		originalGetGitRepoPath := GetGitRepoPath // Store original
+		GetGitRepoPath = exec.Command("false") // Command that will fail
+		t.Cleanup(func() { GetGitRepoPath = originalGetGitRepoPath }) // Restore
+		
+		originalScriptContent := "source /managed-scripts/libs/any-lib.sh\n"
+		
+		_, err := inlineLibrarySourceFiles(originalScriptContent, scriptPath)
+		if err == nil {
+			t.Fatalf("Expected an error from GetGitRepoPath, got nil")
+		}
+		// Check if the error is an exit error, which is what exec.Command("false").Run() would produce
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			// If it's not an ExitError, it might be some other error from Run(), like command not found.
+			// For this test, we just care that an error is propagated.
+			// A more specific check might be needed if the mock was more complex.
+			t.Logf("Note: GetGitRepoPath failed as expected, but not with an ExitError. Error: %v", err)
+		}
+	})
+}

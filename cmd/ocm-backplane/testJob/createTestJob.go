@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -177,6 +178,13 @@ func runCreateTestJob(cmd *cobra.Command, args []string) error {
 	clusterID := bpCluster.ClusterID
 
 	if urlFlag != "" {
+		parsedURL, parseErr := url.ParseRequestURI(urlFlag)
+		if parseErr != nil {
+			return fmt.Errorf("invalid --url: %v", parseErr)
+		}
+		if parsedURL.Scheme != "https" {
+			return fmt.Errorf("invalid --url '%s': scheme must be https", urlFlag)
+		}
 		backplaneHost = urlFlag
 	}
 
@@ -345,7 +353,30 @@ func inlineLibrarySourceFiles(script string, scriptPath string) (string, error) 
 	}
 	libraryEncoded := base64.StdEncoding.EncodeToString([]byte(fileBody))
 
-	inlinedFunction := "base64 -d <<< " + libraryEncoded + " > /tmp/lib.sh\nsource /tmp/lib.sh\n"
+	// Generate a script snippet that creates a unique temp file, writes the decoded library to it, sources it, and then cleans it up.
+	// Using mktemp ensures a unique temporary file is created on the server where the script runs.
+	inlinedFunction := fmt.Sprintf(`
+TMP_LIB_FILE=$(mktemp /tmp/backplane-lib-XXXXXX.sh)
+if [ -z "$TMP_LIB_FILE" ]; then
+  echo "Failed to create temporary library file." >&2
+  exit 1
+fi
+echo "%s" | base64 -d > "$TMP_LIB_FILE"
+source "$TMP_LIB_FILE"
+rm "$TMP_LIB_FILE"
+`, libraryEncoded)
+
+	// Ensure the replacement preserves the newline that was part of the original 'match'
+	// by adding a newline to inlinedFunction if 'match' ended with one and inlinedFunction doesn't.
+	// However, the regex "source /managed-scripts/(.*)\n" includes the newline in 'match'.
+	// The Printf format string for inlinedFunction also starts with a newline.
+	// We should ensure the final script is well-formed.
+	// A simple approach is to ensure inlinedFunction ends with a newline if 'match' did.
+	// The current 'match' includes the newline, so the replacement should effectively place 'inlinedFunction'
+	// and the script execution should continue on the next line or interpret the commands as intended.
+	// Let's ensure inlinedFunction is treated as a block.
+	// The regex captures the newline, so simply replacing 'match' is correct.
+	// The fmt.Sprintf automatically handles newlines within the backticks.
 
 	inlinedScript := strings.Replace(script, match, inlinedFunction, 1)
 
