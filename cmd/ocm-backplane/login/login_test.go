@@ -684,4 +684,444 @@ var _ = Describe("Login command", func() {
 			Expect(err.Error()).To(Equal("clusterID cannot be detected for JIRA issue:OHSS-1000"))
 		})
 	})
+
+	Context("RunLogin specific error paths", func() {
+		var tempConfigFile *os.File
+		var err error
+
+		BeforeEach(func() {
+			// Common setup for this context if any
+		})
+
+		AfterEach(func() {
+			if tempConfigFile != nil {
+				os.Remove(tempConfigFile.Name())
+				tempConfigFile = nil
+			}
+			os.Unsetenv("BACKPLANE_CONFIG")
+		})
+
+		It("should fail if GetBackplaneConfiguration returns an error", func() {
+			// Create a temporary invalid config file
+			tempConfigFile, err = os.CreateTemp("", "invalid-config-*.json")
+			Expect(err).NotTo(HaveOccurred())
+			_, err = tempConfigFile.WriteString("{invalid_json_data:}")
+			Expect(err).NotTo(HaveOccurred())
+			err = tempConfigFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+			// Call runLogin - expect an error due to invalid config
+			// Provide minimal valid arguments to runLogin if necessary,
+			// though it should fail before using them.
+			// Assuming LoginTypeClusterID for this test, with a dummy cluster ID.
+			loginType = LoginTypeClusterID
+			err = runLogin(nil, []string{"dummyClusterID"})
+
+			Expect(err).To(HaveOccurred())
+			// The error message might vary depending on the JSON parser,
+			// but it should indicate a config loading/parsing issue.
+			// Example: "unable to load config file" or similar from viper/fsnotify
+			// For now, just check that an error occurred.
+			// A more specific check might be "error unmarshalling JSON" or similar based on actual error from config pkg.
+			// Based on config.LoadOrNew, it uses viper, so error might be from viper.
+			Expect(err.Error()).Should(Or(ContainSubstring("unmarshal errors"), ContainSubstring("Unable to load backplane config")))
+		})
+
+		Context("when loginType is LoginTypePagerduty", func() {
+			BeforeEach(func() {
+				loginType = LoginTypePagerduty
+				args.pd = "dummyIncidentID" // A dummy incident ID for these tests
+			})
+
+			It("should fail if PagerDutyAPIKey is empty in bpConfig", func() {
+				// Create a temporary valid config file with empty PagerDutyAPIKey
+				tempConfigFile, err = os.CreateTemp("", "valid-config-empty-pdkey-*.json")
+				Expect(err).NotTo(HaveOccurred())
+
+				validConfigWithEmptyPDKey := config.BackplaneConfiguration{
+					URL:             "https://example.com", // Need some valid URL
+					PagerDutyAPIKey: "",                    // Empty key
+				}
+				configData, _ := json.Marshal(validConfigWithEmptyPDKey)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				// Mock OCM environment as it's called before PagerDuty logic sometimes (e.g. in error path of GetTargetCluster)
+				// However, GetBackplaneConfiguration is called first.
+				// If GetTargetCluster is reached, it might need mocks.
+				// In this specific path, runLogin should return before GetTargetCluster if PD key is empty.
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+
+
+				err = runLogin(nil, []string{}) // No argv needed as PD incident ID is from args.pd
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("please make sure the PD API Key is configured correctly in the config file"))
+			})
+
+			It("should fail if GetClusterInfoFromIncident fails (via URL parsing path with non-existent ID)", func() {
+				args.pd = "https://sometenant.pagerduty.com/incidents/" + falsePagerDutyIncidentID // falsePagerDutyIncidentID is known to cause 404
+
+				// Create a temporary valid config file with the true PagerDutyAPIKey
+				tempConfigFile, err = os.CreateTemp("", "valid-config-true-pdkey-*.json")
+				Expect(err).NotTo(HaveOccurred())
+
+				validConfigWithTruePDKey := config.BackplaneConfiguration{
+					URL:             "https://example.com",
+					PagerDutyAPIKey: truePagerDutyAPITkn, // True test token
+				}
+				configData, _ := json.Marshal(validConfigWithTruePDKey)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+
+				err = runLogin(nil, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).Should(ContainSubstring("status code 404")) // PagerDuty API should return 404 for non-existent incident
+			})
+		})
+
+		Context("when loginType is LoginTypeJira", func() {
+			var expectedJiraErr error
+
+			BeforeEach(func() {
+				loginType = LoginTypeJira
+				args.ohss = "OHSS-DUMMY"
+				expectedJiraErr = errors.New("jira get issue failed")
+
+				// Ensure bpConfig is valid and doesn't cause early exit
+				// This can be done by setting up a minimal valid temp config file once for the parent context
+				// or ensuring default GetBackplaneConfiguration works if not overridden by specific tests.
+				// For simplicity, let's ensure a valid config for these Jira tests.
+				tempConfigFile, err = os.CreateTemp("", "valid-config-jira-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				validConfig := config.BackplaneConfiguration{URL: "https://example.com"}
+				configData, _ := json.Marshal(validConfig)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				// Setup mockIssueService for JIRA tests (defined in the outer Describe's BeforeEach)
+				// If mockIssueService is not initialized, this will panic.
+				// It's initialized in the main Describe's BeforeEach.
+				// Re-assign ohssService to use the mocked one for each test.
+				mockIssueService = jiraMock.NewMockIssueServiceInterface(mockCtrl)
+				ohssService = jiraClient.NewOHSSService(mockIssueService)
+
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+			})
+
+			It("should fail if ohssService.GetIssue returns an error", func() {
+				mockIssueService.EXPECT().Get(args.ohss, nil).Return(nil, nil, expectedJiraErr).Times(1)
+
+				err = runLogin(nil, []string{}) // No argv needed as JIRA ID is from args.ohss
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(expectedJiraErr.Error()))
+			})
+
+			It("should fail if JIRA issue is retrieved but ClusterID is empty", func() {
+				emptyClusterIDIssue := jira.Issue{
+					ID: args.ohss,
+					Fields: &jira.IssueFields{
+						Project:  jira.Project{Key: jiraClient.JiraOHSSProjectKey},
+						Unknowns: tcontainer.MarshalMap{}, // No ClusterID custom field
+					},
+				}
+				// ohssService.GetIssue returns an OHSSIssue, not a jira.Issue directly.
+				// The conversion logic is within ohssService.GetIssue.
+				// So we mock Get to return a jira.Issue that will result in an empty ClusterID in the OHSSIssue.
+				// The actual OHSSIssue conversion happens inside jira.GetIssue -> mapToDO(issue)
+				// mapToDO will set ClusterID from issue.Fields.Unknowns[CustomFieldClusterID]
+				mockIssueService.EXPECT().Get(args.ohss, nil).Return(&emptyClusterIDIssue, nil, nil).Times(1)
+
+				err = runLogin(nil, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(fmt.Sprintf("clusterID cannot be detected for JIRA issue:%s", args.ohss)))
+			})
+		})
+
+		Context("when loginType is LoginTypeExistingKubeConfig", func() {
+			BeforeEach(func() {
+				loginType = LoginTypeExistingKubeConfig
+
+				// Ensure bpConfig is valid
+				tempConfigFile, err = os.CreateTemp("", "valid-config-kubeconfig-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				validConfig := config.BackplaneConfiguration{URL: "https://example.com"}
+				configData, _ := json.Marshal(validConfig)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				// Ensure Kubeconfig is empty/invalid for this test,
+				// which is typically handled by the main Describe's BeforeEach.
+				// clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), api.Config{}, true)
+				// This should cause GetBackplaneClusterFromConfig to fail.
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+
+			})
+
+			It("should fail if GetBackplaneClusterFromConfig returns an error", func() {
+				// With an empty kubeconfig, GetBackplaneClusterFromConfig should fail.
+				// The error is usually "current context is not set" or similar.
+				err = runLogin(nil, []string{}) // No argv needed for this login type
+				Expect(err).To(HaveOccurred())
+				// Example error from utils.GetBackplaneClusterFromConfig() with empty config:
+				// "config view is nil" or "current context is not set"
+				// Let's check for a substring that's likely.
+				Expect(err.Error()).Should(MatchRegexp("(?i)kubeconfig|context|cluster information"))
+			})
+		})
+
+		It("should fail if ocm.GetTargetCluster returns an error", func() {
+			loginType = LoginTypeClusterID // Use a simple login type for this
+			clusterKey := "dummyClusterIDForTargetClusterFail"
+			expectedErr := errors.New("get target cluster failed")
+
+			// Ensure bpConfig is valid
+			tempConfigFile, err = os.CreateTemp("", "valid-config-*.json")
+			Expect(err).NotTo(HaveOccurred())
+			validConfig := config.BackplaneConfiguration{URL: "https://example.com"}
+			configData, _ := json.Marshal(validConfig)
+			_, err = tempConfigFile.Write(configData)
+			Expect(err).NotTo(HaveOccurred())
+			err = tempConfigFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+			os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+			mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes() // May be called by proxy setup or other preceding logic
+			mockOcmInterface.EXPECT().GetTargetCluster(clusterKey).Return("", "", expectedErr).Times(1)
+
+			err = runLogin(nil, []string{clusterKey})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(expectedErr.Error()))
+		})
+
+		Context("when globalOpts.Manager is true", func() {
+			var originalClusterID string
+			var originalClusterName string
+
+			BeforeEach(func() {
+				globalOpts.Manager = true
+				loginType = LoginTypeClusterID
+				originalClusterID = "original-cluster-id"
+				originalClusterName = "original-cluster-name"
+
+				// Ensure bpConfig is valid
+				tempConfigFile, err = os.CreateTemp("", "valid-config-manager-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				validConfig := config.BackplaneConfiguration{URL: "https_example.com"}
+				configData, _ := json.Marshal(validConfig)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				// Common successful GetTargetCluster mock
+				mockOcmInterface.EXPECT().GetTargetCluster(gomock.Any()).Return(originalClusterID, originalClusterName, nil).AnyTimes()
+				// Common GetOCMEnvironment mock
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+				// Mock IsClusterHibernating for the original cluster to pass DisplayClusterInfo if enabled
+				mockOcmInterface.EXPECT().IsClusterHibernating(originalClusterID).Return(false, nil).AnyTimes()
+
+				// Default mocks for PrintClusterInfo if args.clusterInfo or bpConfig.DisplayClusterInfo is true
+				// These might be called before GetManagingCluster fails, depending on config.
+				// Add lenient mocks for them.
+				if args.clusterInfo || backplaneConfiguration.DisplayClusterInfo {
+					mockOcmInterface.EXPECT().GetClusterInfoByID(originalClusterID).Return(mockCluster, nil).AnyTimes()
+					mockOcmInterface.EXPECT().SetupOCMConnection().Return(nil, nil).AnyTimes()
+					mockOcmInterface.EXPECT().IsClusterAccessProtectionEnabled(gomock.Any(), originalClusterID).Return(false, nil).AnyTimes()
+				}
+			})
+
+			AfterEach(func() {
+				globalOpts.Manager = false
+			})
+
+			It("should fail if ocm.GetManagingCluster returns an error", func() {
+				expectedErr := errors.New("get managing cluster failed")
+				mockOcmInterface.EXPECT().GetManagingCluster(originalClusterID).Return("", "", false, expectedErr).Times(1)
+
+				err = runLogin(nil, []string{originalClusterID}) // Pass originalClusterID as argv
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(expectedErr.Error()))
+			})
+
+			It("should fail if listNamespaces returns an error (e.g. GetClusterInfoByID fails)", func() {
+				managingClusterID := "managing-cluster-id"
+				managingClusterName := "managing-cluster-name"
+				isHostedControlPlane := false // or true, doesn't fundamentally change this error path
+
+				// GetManagingCluster must succeed for listNamespaces to be called
+				mockOcmInterface.EXPECT().GetManagingCluster(originalClusterID).Return(managingClusterID, managingClusterName, isHostedControlPlane, nil).Times(1)
+
+				// listNamespaces calls GetOCMEnvironment first
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).Times(1) // ocmEnv is from global test setup
+
+				// Then listNamespaces calls GetClusterInfoByID with the *original* cluster ID
+				expectedListNamespacesErr := errors.New("listNamespaces GetClusterInfoByID failed")
+				mockOcmInterface.EXPECT().GetClusterInfoByID(originalClusterID).Return(nil, expectedListNamespacesErr).Times(1)
+
+
+				err = runLogin(nil, []string{originalClusterID})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(expectedListNamespacesErr.Error()))
+			})
+		})
+
+		Context("when globalOpts.Service is true", func() {
+			var initialTargetClusterID string
+			var initialTargetClusterName string
+
+			BeforeEach(func() {
+				globalOpts.Service = true
+				loginType = LoginTypeClusterID
+				initialTargetClusterID = "initial-target-id"
+				initialTargetClusterName = "initial-target-name"
+
+				// Ensure bpConfig is valid
+				tempConfigFile, err = os.CreateTemp("", "valid-config-service-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				validConfig := config.BackplaneConfiguration{URL: "https_example.com"}
+				configData, _ := json.Marshal(validConfig)
+				_, err = tempConfigFile.Write(configData)
+				Expect(err).NotTo(HaveOccurred())
+				err = tempConfigFile.Close()
+				Expect(err).NotTo(HaveOccurred())
+				os.Setenv("BACKPLANE_CONFIG", tempConfigFile.Name())
+
+				// Common successful GetTargetCluster mock
+				mockOcmInterface.EXPECT().GetTargetCluster(gomock.Any()).Return(initialTargetClusterID, initialTargetClusterName, nil).AnyTimes()
+				// Common GetOCMEnvironment mock
+				mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+				// Mock IsClusterHibernating for the original cluster
+				mockOcmInterface.EXPECT().IsClusterHibernating(initialTargetClusterID).Return(false, nil).AnyTimes()
+
+				// Default mocks for PrintClusterInfo if enabled (called with initialTargetClusterID)
+				if args.clusterInfo || backplaneConfiguration.DisplayClusterInfo {
+					mockOcmInterface.EXPECT().GetClusterInfoByID(initialTargetClusterID).Return(mockCluster, nil).AnyTimes()
+					mockOcmInterface.EXPECT().SetupOCMConnection().Return(nil, nil).AnyTimes()
+					mockOcmInterface.EXPECT().IsClusterAccessProtectionEnabled(gomock.Any(), initialTargetClusterID).Return(false, nil).AnyTimes()
+				}
+			})
+
+			AfterEach(func() {
+				globalOpts.Service = false
+			})
+
+			It("should fail if the first GetManagingCluster (for HCP check) returns an error", func() {
+				expectedErr := errors.New("get managing cluster for hcp check failed")
+				mockOcmInterface.EXPECT().GetManagingCluster(initialTargetClusterID).Return("", "", false, expectedErr).Times(1)
+
+				err = runLogin(nil, []string{initialTargetClusterID})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(expectedErr.Error()))
+			})
+
+			It("should fail if ocm.GetServiceCluster returns an error", func() {
+				// First GetManagingCluster (for HCP check) must succeed
+				managingClusterName := "managing-cluster-for-hcp-check"
+				isHostedControlPlane := true // Assume true to proceed to GetServiceCluster
+				mockOcmInterface.EXPECT().GetManagingCluster(initialTargetClusterID).Return(managingClusterID, managingClusterName, isHostedControlPlane, nil).Times(1)
+
+				expectedErr := errors.New("get service cluster failed")
+				mockOcmInterface.EXPECT().GetServiceCluster(initialTargetClusterID).Return("", "", expectedErr).Times(1)
+
+				err = runLogin(nil, []string{initialTargetClusterID})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(expectedErr.Error()))
+			})
+
+			It("should fail if not a hosted control plane cluster", func() {
+				// First GetManagingCluster (for HCP check) must succeed and return isHostedControlPlane = false
+				managingClusterName := "managing-cluster-for-hcp-check"
+				isHostedControlPlane := false // This is the key for this test
+				mockOcmInterface.EXPECT().GetManagingCluster(initialTargetClusterID).Return(managingClusterID, managingClusterName, isHostedControlPlane, nil).Times(1)
+
+				// GetServiceCluster must also succeed for the HCP check to be the point of failure
+				serviceClusterID := "service-id"
+				serviceClusterName := "service-name"
+				mockOcmInterface.EXPECT().GetServiceCluster(initialTargetClusterID).Return(serviceClusterID, serviceClusterName, nil).Times(1)
+
+				err = runLogin(nil, []string{initialTargetClusterID})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("manifestworks are only available for hosted control plane clusters"))
+			})
+		})
+
+		It("should fail if login.SaveKubeConfig returns an error", func() {
+			loginType = LoginTypeClusterID
+			targetClusterKey := "targetClusterForSaveKubeConfigFail"
+			targetClusterID := "targetClusterID-actual"
+			targetClusterName := "targetClusterName-actual"
+			dummyProxyURL := "https://proxy.example.com"
+
+			// Setup for SaveKubeConfig to fail: make kubeConfigPath a file
+			tempWriteTestFile, err := os.CreateTemp("", "readonly-file-")
+			Expect(err).NotTo(HaveOccurred())
+			tempWriteTestFile.Close() // Close it so it's just a file
+			defer os.Remove(tempWriteTestFile.Name())
+
+			args.multiCluster = true // Enable multi-cluster to use kubeConfigPath logic in SaveKubeConfig
+			args.kubeConfigPath = tempWriteTestFile.Name() // Set path to be a file
+
+			// Ensure bpConfig is valid
+			// Using the global tempConfigFile from the parent Context
+			bpFile, err := os.CreateTemp("", "valid-config-savekubeconfig-*.json")
+			Expect(err).NotTo(HaveOccurred())
+			defer os.Remove(bpFile.Name())
+			validConfig := config.BackplaneConfiguration{URL: "https_example.com"}
+			configData, _ := json.Marshal(validConfig)
+			_, err = bpFile.Write(configData)
+			Expect(err).NotTo(HaveOccurred())
+			err = bpFile.Close()
+			Expect(err).NotTo(HaveOccurred())
+			os.Setenv("BACKPLANE_CONFIG", bpFile.Name())
+
+
+			mockOcmInterface.EXPECT().GetOCMEnvironment().Return(ocmEnv, nil).AnyTimes()
+			mockOcmInterface.EXPECT().GetTargetCluster(targetClusterKey).Return(targetClusterID, targetClusterName, nil)
+			mockOcmInterface.EXPECT().IsClusterHibernating(targetClusterID).Return(false, nil)
+			mockOcmInterface.EXPECT().GetOCMAccessToken().Return(&testToken, nil) // testToken from global test setup
+
+			// Mock for doLogin
+			mockClientUtil.EXPECT().MakeRawBackplaneAPIClientWithAccessToken(gomock.Any(), testToken).Return(mockClient, nil)
+			// Prepare a response for client.LoginCluster that doLogin can parse
+			loginRespBody := fmt.Sprintf(`{"proxy_uri": "%s"}`, strings.Replace(dummyProxyURL, "https_example.com", "", 1))
+			fakeRespForDoLogin := &http.Response{
+				Body:       MakeIoReader(loginRespBody),
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				StatusCode: http.StatusOK,
+			}
+			mockClient.EXPECT().LoginCluster(gomock.Any(), targetClusterID).Return(fakeRespForDoLogin, nil)
+
+
+			err = runLogin(nil, []string{targetClusterKey})
+			Expect(err).To(HaveOccurred())
+			// The error from SaveKubeConfig when path is a file is typically like "mkdir <path>: not a directory"
+			// or "failed to save kubeconfig for cluster..."
+			Expect(err.Error()).Should(Or(
+				ContainSubstring("not a directory"),
+				ContainSubstring("failed to save kubeconfig"),
+				ContainSubstring("is a file not a directory"), // error from pkg/login/kubeconfig.go
+			))
+
+			// Cleanup args
+			args.multiCluster = false
+			args.kubeConfigPath = ""
+		})
+	})
 })
