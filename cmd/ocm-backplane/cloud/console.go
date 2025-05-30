@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings" // Added import
 
 	"github.com/openshift/backplane-cli/pkg/ocm"
 
@@ -160,6 +161,19 @@ func runConsole(cmd *cobra.Command, argv []string) (err error) {
 		if connErr := backplaneConfiguration.CheckAPIConnection(); connErr != nil {
 			logger.Error("Cannot connect to backplane API URL, check if you need to use a proxy/VPN to access backplane:")
 			logger.Errorf("Error: %v.\n%s", connErr, helperMsg)
+			// It's possible connErr is the primary issue, so return it directly or wrapped.
+			// For now, we assume the main 'err' is the one from GetCloudConsole().
+		}
+
+		// Check for specific email validation error
+		// The actual error from backplane might be wrapped, so direct string comparison on err.Error() is a start.
+		// A more robust solution might involve checking for an HTTP status code if the API client surfaces it.
+		if strings.Contains(err.Error(), "could not validate email") || strings.Contains(err.Error(), "Status Code: 403") {
+			return fmt.Errorf("failed to get cloud console for cluster %v due to an email validation issue: %w. "+
+				"Please ensure you are correctly logged into OCM (`ocm login`), "+
+				"that your email address is verified in your OCM account, "+
+				"and that your OCM account has the necessary permissions. "+
+				"If the issue persists, please check your OCM account settings or contact OCM support. Original error", clusterID, err)
 		}
 
 		return fmt.Errorf("failed to get cloud console for cluster %v: %w", clusterID, err)
