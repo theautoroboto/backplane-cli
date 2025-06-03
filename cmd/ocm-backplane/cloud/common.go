@@ -72,13 +72,20 @@ func (cfg *QueryConfig) GetCloudConsole() (*ConsoleResponse, error) {
 		return nil, fmt.Errorf("unable to get token for ocm connection")
 	}
 
-	isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
+	useIsolatedPath := false
+	if cfg.Govcloud {
+		useIsolatedPath = true
+		logger.Debugf("GovCloud environment, forcing isolated credentials path")
+	} else {
+		isolatedBackplane, err := isIsolatedBackplaneAccess(cfg.Cluster, cfg.OcmConnection)
+		if err != nil {
+			return nil, fmt.Errorf("failed to determine if cluster is using isolated backlpane access: %w", err)
+		}
+		useIsolatedPath = isolatedBackplane
 	}
 
-	if isolatedBackplane {
-		logger.Debugf("cluster is using isolated backplane")
+	if useIsolatedPath {
+		logger.Debugf("cluster is using isolated backplane or GovCloud environment, using isolated credentials path")
 		targetCredentials, err := cfg.getIsolatedCredentials(ocmToken)
 		if err != nil {
 			return nil, fmt.Errorf("failed to assume role with isolated backplane flow: %w", err)
