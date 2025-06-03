@@ -238,6 +238,7 @@ func (cfg *QueryConfig) getIsolatedCredentials(ocmToken string) (aws.Credentials
 	if err != nil {
 		return aws.Credentials{}, fmt.Errorf("unable to extract email from given token: %w", err)
 	}
+	sanitizedEmailForRoleName := utils.SanitizeRoleSessionName(email)
 
 	if cfg.BackplaneConfiguration.AssumeInitialArn == "" {
 		// If not provided as an override, attempt to automatically set this based on OCM url
@@ -295,7 +296,7 @@ func (cfg *QueryConfig) getIsolatedCredentials(ocmToken string) (aws.Credentials
 		if namedRoleArnEntry.Name == CustomerRoleArnName || namedRoleArnEntry.Name == OrgRoleArnName {
 			roleArnSession.RoleSessionName = roleChainResponse.CustomerRoleSessionName
 		} else {
-			roleArnSession.RoleSessionName = email
+			roleArnSession.RoleSessionName = sanitizedEmailForRoleName
 		}
 		assumeRoleArnSessionSequence = append(assumeRoleArnSessionSequence, roleArnSession)
 	}

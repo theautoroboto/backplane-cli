@@ -301,3 +301,61 @@ func AppendUniqNoneEmptyString(slice []string, element string) []string {
 	}
 	return append(slice, element) // Append the element
 }
+
+// SanitizeRoleSessionName ensures the role session name adheres to AWS STS constraints.
+// AWS STS RoleSessionName requirements:
+// - Length: 2 to 64 characters
+// - Characters: A-Za-z0-9_+=,.@-
+// This function replaces invalid characters with '_' and truncates/pads as needed.
+func SanitizeRoleSessionName(name string) string {
+	const (
+		minLen      = 2
+		maxLen      = 64
+		validChars  = "A-Za-z0-9_+=,.@-"
+		prefix      = "rs-"
+		defaultName = "default_session_name"
+	)
+
+	originalName := name
+	sanitized := strings.Builder{}
+	for _, r := range name {
+		// Explicit character validation
+		isValidChar := false
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			isValidChar = true
+		} else {
+			switch r {
+			case '_', '+', '=', ',', '.', '@', '-':
+				isValidChar = true
+			}
+		}
+
+		if isValidChar {
+			sanitized.WriteRune(r)
+		} else {
+			sanitized.WriteRune('_')
+		}
+	}
+
+	result := sanitized.String()
+
+	if len(result) > maxLen {
+		result = result[:maxLen]
+	}
+
+	if len(result) < minLen {
+		if originalName != "" {
+			result = prefix + result
+			if len(result) > maxLen {
+				result = result[:maxLen]
+			}
+			if len(result) < minLen {
+				result = defaultName
+			}
+		} else {
+			result = defaultName
+		}
+	}
+
+	return result
+}

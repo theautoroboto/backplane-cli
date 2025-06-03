@@ -73,13 +73,14 @@ func AssumeRoleWithJWT(jwt string, roleArn string, stsClient stscreds.AssumeRole
 	if err != nil {
 		return aws.Credentials{}, fmt.Errorf("unable to extract email from given token: %w", err)
 	}
+	sanitizedEmail := utils.SanitizeRoleSessionName(email)
 
 	credentialsCache := aws.NewCredentialsCache(stscreds.NewWebIdentityRoleProvider(
 		stsClient,
 		roleArn,
 		IdentityTokenValue(jwt),
 		func(options *stscreds.WebIdentityRoleOptions) {
-			options.RoleSessionName = email
+			options.RoleSessionName = sanitizedEmail
 		},
 	))
 
