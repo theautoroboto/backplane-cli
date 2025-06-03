@@ -17,6 +17,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go-v2/service/sts/types"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type STSRoleAssumerMock struct {
@@ -341,6 +344,30 @@ func TestGetSigninToken(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAssumeRoleWithJWT_MissingEmailClaim(t *testing.T) {
+	// Create a mock JWT token without an email claim
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user": "testuser", // No "email" claim
+	})
+	tokenString, err := token.SignedString([]byte("testsecret"))
+	require.NoError(t, err)
+
+	// Use the existing STSRoleAssumerMock.
+	// We expect AssumeRoleWithWebIdentity not to be called.
+	// If it were called, it would use its default behavior or the one set by mockErr.
+	// For this test, the function should error out before calling the STS client.
+	mockStsClient := STSRoleAssumerMock{
+		mockErr: errors.New("AssumeRoleWithWebIdentity should not have been called as email extraction should fail first"),
+	}
+
+	_, err = AssumeRoleWithJWT(tokenString, "arn:aws:iam::123456789012:role/testrole", mockStsClient)
+
+	require.Error(t, err, "Expected an error due to missing email claim")
+	assert.Contains(t, err.Error(), "unable to extract email from given token: the 'email' claim is missing. This claim is required to assume the AWS role. Please check your token or try re-authenticating", "Error message mismatch")
+	// Ensure the original error from utils.GetStringFieldFromJWT is also part of the new error
+	assert.Contains(t, err.Error(), "no field email on given token", "Original error not wrapped as expected")
 }
 
 func TestGetConsoleUrl(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	logger "github.com/sirupsen/logrus"
@@ -71,6 +72,10 @@ func (j IdentityTokenValue) GetIdentityToken() ([]byte, error) {
 func AssumeRoleWithJWT(jwt string, roleArn string, stsClient stscreds.AssumeRoleWithWebIdentityAPIClient) (aws.Credentials, error) {
 	email, err := utils.GetStringFieldFromJWT(jwt, "email")
 	if err != nil {
+		// Check if the error is due to a missing "email" field
+		if strings.Contains(err.Error(), "no field email on given token") {
+			return aws.Credentials{}, fmt.Errorf("unable to extract email from given token: the 'email' claim is missing. This claim is required to assume the AWS role. Please check your token or try re-authenticating: %w", err)
+		}
 		return aws.Credentials{}, fmt.Errorf("unable to extract email from given token: %w", err)
 	}
 	sanitizedEmail := utils.SanitizeRoleSessionName(email)
